@@ -1,16 +1,16 @@
-# CLAUDE.md — CATALON-GUARD Stabilization + Agent Presets
+# CLAUDE.md — ANVIL-BELLOWS Stabilization + Agent Presets
 
 ## Project
 
 Repository:
 
-`Lootziffer666/CATALON-GUARD`
+`Lootziffer666/ANVIL-BELLOWS`
 
 Main Android project:
 
-`Android/CatalonGuard`
+`Android/AnvilBellows`
 
-CATALON-GUARD is an Android LLM router app assembled from OPENDORK/CATALON-GUARD concepts.
+ANVIL-BELLOWS is an Android LLM router app assembled from OPENDORK/ANVIL-BELLOWS concepts.
 
 This handoff has two gates:
 
@@ -36,7 +36,7 @@ Provider Router
 + Project/Context Awareness later
 ```
 
-Agent Presets should behave like CustomGPT-style reusable chat modes, but they must be implemented inside CATALON-GUARD's own architecture.
+Agent Presets should behave like CustomGPT-style reusable chat modes, but they must be implemented inside ANVIL-BELLOWS's own architecture.
 
 Use Open-Custom-GPT as a concept reference only.
 
@@ -69,7 +69,7 @@ Do not directly control ChatGPT CustomGPTs.
 Run Android commands from:
 
 ```bash
-cd Android/CatalonGuard
+cd Android/AnvilBellows
 ```
 
 Required verification:
@@ -105,7 +105,7 @@ Delete or disable the duplicate workflow.
 
 In the remaining workflow:
 
-- use `working-directory: Android/CatalonGuard`
+- use `working-directory: Android/AnvilBellows`
 - run `./gradlew assembleDebug`
 - run `./gradlew test`
 - optionally run `./gradlew assembleRelease`
@@ -117,7 +117,7 @@ In the remaining workflow:
 
 Known issue:
 
-`CatalonApiServer` currently creates fake session IDs like:
+`AnvilApiServer` currently creates fake session IDs like:
 
 ```kotlin
 val sessionId = "api_${System.currentTimeMillis()}"
@@ -133,7 +133,7 @@ Implement a minimal safe fix.
 
 Preferred option:
 
-- inject `ConversationRepository` and `ProviderConfigDao` into `CatalonApiServer`
+- inject `ConversationRepository` and `ProviderConfigDao` into `AnvilApiServer`
 - create a real conversation session before calling `ChatUseCase`
 - save incoming user messages if appropriate
 - pass the real `sessionId` to `ChatUseCase`
@@ -149,7 +149,7 @@ Do not silently swallow DB foreign key exceptions.
 
 Known issue:
 
-`CatalonGuardApp` initializes `DatabaseInitializer` asynchronously in `Application.onCreate()`.
+`AnvilBellowsApp` initializes `DatabaseInitializer` asynchronously in `Application.onCreate()`.
 
 `ChatViewModel` immediately queries enabled providers during init.
 
@@ -259,7 +259,7 @@ Open-Custom-GPT assistant name       -> AgentPreset.name
 Open-Custom-GPT instructions         -> AgentPreset.systemPrompt
 Open-Custom-GPT retrieval/files      -> future fileScopeIds / FILE_CONTEXT
 Open-Custom-GPT functions/actions    -> functionSchemaJson, stored but not executed yet
-Open-Custom-GPT embedded chat        -> CATALON-GUARD chat overview / local API later
+Open-Custom-GPT embedded chat        -> ANVIL-BELLOWS chat overview / local API later
 Open-Custom-GPT Assistants API object -> do not depend on it
 ```
 
@@ -441,7 +441,7 @@ Do not introduce a webview-based builder.
 Run:
 
 ```bash
-cd Android/CatalonGuard
+cd Android/AnvilBellows
 ./gradlew clean
 ./gradlew assembleDebug
 ./gradlew test

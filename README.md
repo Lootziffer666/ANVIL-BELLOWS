@@ -1,17 +1,35 @@
-# CATALON-GUARD
+# ANVIL-BELLOWS
 
 ## Purpose
-CATALON-GUARD is a robust framework designed to enhance automation testing processes in software development using the CATALON tool.
+
+Anvil Bellows is an LLM Router & Multi-CustomOpenAI Toolkit with budget guarding, quota management, and agent presets. It includes an Android app and a Next.js control surface GUI.
+
+## Design System
+
+The GUI uses the **Ink & Iron Glow (IIG) Design System** with two material themes:
+
+- **Warm Paper** (Light) — Cream, sand, warm ink. Oxidrot primary, Amber focus.
+- **Charcoal Room** (Dark) — Deep anthracite, glowing red, metallic amber. Non-linear material shift (not a simple inversion).
+
+Key principles:
+- Editorial grid layout with Rail, Topbar, Main Canvas, Annotation Sidebar
+- Three font families: Bebas Neue (display), Source Sans 3 (body), Merriweather (annotations)
+- Semantic Seal system instead of generic icons
+- Permanent annotation margins instead of hidden tooltips
+- Surface noise texture for tactile paper feel
 
 ## Current Status
-This project is in active development with continued enhancements to support new features in CATALON.
 
-## Next Steps
-- Integrate additional APIs for reporting.
-- Implement new test scripts based on user feedback.
+Active development. Android app + Next.js GUI both use IIG design tokens.
 
-## Known Gaps
-- Documentation for some features needs improvement.
+## Architecture
+
+```
+Android/AnvilBellows/   — Android app (Kotlin, Compose, Material3, IIG theme)
+src/                    — Next.js control surface GUI (IIG Design System)
+anvil-bellows/          — Python proxy + budget guard
+```
 
 ## Related Repositories
-- [CATALON](https://github.com/Lootziffer666/CATALON) - Core library for automation scripts.
+
+- [ANVIL](https://github.com/Lootziffer666/ANVIL) — Core framework

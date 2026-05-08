@@ -1,0 +1,174 @@
+# Anvil-Bellows LiteLLM Proxy Configuration
+# Version: 1.0 - V1.0 Infrastruktur & Kosten-Schild
+# 
+# How to add new models:
+# 1. Add to model_list with unique model_name
+# 2. Configure litellm_params with provider settings
+# 3. Update general_settings.master_key if needed
+
+model_list:
+  # ============================================================================
+  # VERTEX AI MODELS (Mayor & Polecat) - Your $250 Credit
+  # ============================================================================
+  
+  # MAYOR: Gemini 1.5 Pro - Primary model for complex tasks
+  # Maps: gpt-4o -> vertex_ai/gemini-1.5-pro
+  - model_name: gpt-4o
+    litellm_params:
+      model: vertex_ai/gemini-1.5-pro-002
+      project: "${GOOGLE_PROJECT_ID}"
+      location: "${GOOGLE_LOCATION}"
+      # Vertex-specific: Enable context caching for repeated prompts
+      vertex_kwargs:
+        enable_raw_content: true
+
+  # MAYOR: Gemini 2.0 Flash (if available)
+  - model_name: gpt-4.5
+    litellm_params:
+      model: vertex_ai/gemini-2.0-flash
+      project: "${GOOGLE_PROJECT_ID}"
+      location: "${GOOGLE_LOCATION}"
+
+  # POLECAT: Gemini 1.5 Flash - Fast & cheap for quick tasks
+  # Maps: gpt-4o-mini -> vertex_ai/gemini-1.5-flash
+  - model_name: gpt-4o-mini
+    litellm_params:
+      model: vertex_ai/gemini-1.5-flash-002
+      project: "${GOOGLE_PROJECT_ID}"
+      location: "${GOOGLE_LOCATION}"
+
+  # POLECAT: Gemini 2.0 Flash (fastest)
+  - model_name: gpt-4o-mini-2
+    litellm_params:
+      model: vertex_ai/gemini-2.0-flash-exp
+      project: "${GOOGLE_PROJECT_ID}"
+      location: "${GOOGLE_LOCATION}"
+
+  # ============================================================================
+  # OPENROUTER FREE MODELS (Refinery)
+  # ============================================================================
+  
+  # Refinery: Mimo v2 Pro - Free code analysis
+  - model_name: refinery
+    litellm_params:
+      model: openrouter/nomic-ai/mimo-v2-pro
+      api_key: "${OPENROUTER_API_KEY}"
+      # Free tier - no cost
+      extra_body:
+        mode: "code"
+
+  # Refinery: DeepSeek V3 Base - Free alternative
+  - model_name: refinery-deepseek
+    litellm_params:
+      model: openrouter/deepseek/deepseek-chat
+      api_key: "${OPENROUTER_API_KEY}"
+
+  # Free: Qwen 2.5 Coder - Code-specialized
+  - model_name: qwen-coder
+    litellm_params:
+      model: openrouter/qwen/qwen-2.5-coder-32b-instruct
+      api_key: "${OPENROUTER_API_KEY}"
+
+  # Free: Phi-4 Mini - Microsoft lightweight
+  - model_name: phi-mini
+    litellm_params:
+      model: openrouter/microsoft/phi-4-mini
+      api_key: "${OPENROUTER_API_KEY}"
+
+  # Free: Nous-Hermes - Open model
+  - model_name: nous-hermes
+    litellm_params:
+      model: openrouter/nousresearch/nous-hermes-2-mistral-7b-dpo
+      api_key: "${OPENROUTER_API_KEY}"
+
+  # ============================================================================
+  # ANTHROPIC COMPATIBLE (via OpenRouter - free tier available)
+  # ============================================================================
+  
+  - model_name: claude-sonnet
+    litellm_params:
+      model: openrouter/anthropic/claude-3-sonnet
+      api_key: "${OPENROUTER_API_KEY}"
+
+  # ============================================================================
+  # EXTENSIBILITY: ADD YOUR OWN MODELS BELOW
+  # ============================================================================
+  # 
+  # Example: Adding a custom model
+  # - model_name: my-custom-model
+  #   litellm_params:
+  #     model: openai/custom-model-name
+  #     api_key: "${CUSTOM_API_KEY}"
+  #
+  # Example: Adding Ollama (local)
+  # - model_name: ollama-llama3
+  #   litellm_params:
+  #     model: ollama/llama3
+  #     api_base: http://localhost:11434
+
+# ============================================================================
+# GENERAL SETTINGS
+# ============================================================================
+
+general_settings:
+  master_key: "${LITELLM_MASTER_KEY}"  # Change this to your secure key
+  # UI: http://localhost:4000/ui
+  # API: http://localhost:4000/v1
+
+# ============================================================================
+# LLM SETTINGS - Cache & Safety
+# ============================================================================
+
+litellm_settings:
+  # ENABLE CACHING - Massive cost savings
+  cache: true
+  cache_type: "local"  # Local disk cache
+  cache_params:
+    ttl: 86000  # 24 hours cache
+  
+  # FAIL-SAFE: Budget protection
+  max_budget: 5.0  # $5.00 USD hard stop
+  budget_duration: 1d  # Reset every 24 hours
+  
+  # Request limits to prevent runaway costs
+  max_tokens_per_request: 8192  # Prevent context looping
+  request_timeout: 120  # 2 minute timeout
+  
+  # Vertex AI specific settings
+  drop_params: true
+  set_verbose: true
+  
+  # Custom callback for budget tracking
+  callbacks: ["prometheus"]  # Enable metrics
+
+# ============================================================================
+# ROUTER SETTINGS - Load balancing
+# ============================================================================
+
+router_settings:
+  # Usage-based routing: direct to cheapest available
+  routing_strategy: usage-based-routing-v2
+  
+  # Retry configuration
+  num_retries: 3
+  retry_after: 2
+  
+  # Fallback order (if primary fails)
+  fallback_models:
+    - gpt-4o-mini  # Fallback to Polecat
+
+# ============================================================================
+# ENVIRONMENT VARIABLES (set these before running)
+# ============================================================================
+#
+# Required:
+#   export GOOGLE_PROJECT_ID="your-project-id"
+#   export GOOGLE_LOCATION="us-central1"
+#   export OPENROUTER_API_KEY="sk-or-..."
+#   export LITELLM_MASTER_KEY="sk-anvil-safe-key"
+#
+# Optional (for local Ollama):
+#   export OLLAMA_HOST="http://localhost:11434"
+#
+# To run:
+#   litellm --config config.yaml --port 4000
