@@ -79,6 +79,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
+    // IIG Typography — Google Fonts downloadable (Libre Baskerville, DM Sans, JetBrains Mono)
+    implementation(libs.androidx.ui.text.google.fonts)
     debugImplementation(libs.androidx.ui.tooling)
 
     // Navigation
