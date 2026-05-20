@@ -89,8 +89,15 @@ class ProvidersViewModel @Inject constructor(
         _keyVersion.update { it + 1 }
     }
 
-    /** Saves a Vertex AI Service Account JSON blob. */
+    /**
+     * Saves a Vertex AI Service Account JSON blob.
+     *
+     * The JSON is stored under the canonical key consumed by [VertexAuthInterceptor]
+     * (`vertex_sa_json`) AND under the per-provider key so the `hasApiKey` UI badge
+     * correctly reflects the configured state.
+     */
     fun saveVertexSaJson(providerId: String, json: String) {
+        encryptedPrefs.storeVertexServiceAccountJson(json.trim())
         encryptedPrefs.storeApiKey(providerId, json.trim())
         _keyVersion.update { it + 1 }
     }

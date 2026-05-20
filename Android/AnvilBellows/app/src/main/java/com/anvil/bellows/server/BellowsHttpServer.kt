@@ -243,8 +243,19 @@ class BellowsHttpServer @Inject constructor(
         """{"id":"$id","object":"chat.completion.chunk","created":$created,"model":"${escapeJson(model)}","choices":[{"index":0,"delta":{"content":"${escapeJson(content)}"},"finish_reason":null}]}"""
 
     private fun buildCompletionResponse(id: String, created: Long, model: String, content: String): String {
-        val tokens = (content.length / 4).coerceAtLeast(1)
+        val tokens = estimateTokens(content)
         return """{"id":"$id","object":"chat.completion","created":$created,"model":"${escapeJson(model)}","choices":[{"index":0,"message":{"role":"assistant","content":"${escapeJson(content)}"},"finish_reason":"stop"}],"usage":{"prompt_tokens":0,"completion_tokens":$tokens,"total_tokens":$tokens}}"""
+    }
+
+    /**
+     * Word-count–based token estimator consistent with [ConversationRepository].
+     * Each whitespace-delimited word ≈ 1 token; each punctuation character ≈ 0.5 tokens.
+     */
+    private fun estimateTokens(text: String): Int {
+        if (text.isBlank()) return 1
+        val words       = text.trim().split(Regex("\\s+")).size
+        val punctuation = text.count { !it.isLetterOrDigit() && !it.isWhitespace() }
+        return (words + punctuation / 2).coerceAtLeast(1)
     }
 
     private fun json(status: Response.Status, body: String): Response =

@@ -5,7 +5,6 @@ import com.anvil.bellows.data.local.db.dao.ProviderConfigDao
 import com.anvil.bellows.data.local.db.dao.RequestLogDao
 import com.anvil.bellows.data.local.db.entity.ProviderConfigEntity
 import com.anvil.bellows.data.remote.provider.Specialty
-import kotlinx.coroutines.sync.Semaphore
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -15,8 +14,6 @@ class RateLimitTracker @Inject constructor(
     private val providerConfigDao: ProviderConfigDao,
     private val modelConfigDao: ModelConfigDao
 ) {
-    private val zaiSemaphore = Semaphore(1)
-
     suspend fun canUse(provider: ProviderConfigEntity): Boolean {
         if (!provider.enabled) return false
 
@@ -60,6 +57,4 @@ class RateLimitTracker @Inject constructor(
         val rpd = requestLogDao.countSince(providerId, now - 86_400_000L)
         return rpm to rpd
     }
-
-    fun getZaiSemaphore(): Semaphore = zaiSemaphore
 }

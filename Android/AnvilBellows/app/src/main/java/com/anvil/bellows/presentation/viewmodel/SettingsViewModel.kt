@@ -36,16 +36,6 @@ class SettingsViewModel @Inject constructor(
     private val _tokenVisible = MutableStateFlow(false)
     val tokenVisible: StateFlow<Boolean> = _tokenVisible.asStateFlow()
 
-    // ── Wiki integration ───────────────────────────────────────────────────────
-    private val _wikiEndpointUrl = MutableStateFlow(encryptedPrefs.getWikiEndpoint() ?: "")
-    val wikiEndpointUrl: StateFlow<String> = _wikiEndpointUrl.asStateFlow()
-
-    private val _wikiToken = MutableStateFlow(encryptedPrefs.getWikiToken() ?: "")
-    val wikiToken: StateFlow<String> = _wikiToken.asStateFlow()
-
-    private val _wikiTokenVisible = MutableStateFlow(false)
-    val wikiTokenVisible: StateFlow<Boolean> = _wikiTokenVisible.asStateFlow()
-
     // ── One-shot snackbar messages ─────────────────────────────────────────────
     private val _snackbarMessage = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val snackbarMessage: SharedFlow<String> = _snackbarMessage.asSharedFlow()
@@ -82,21 +72,6 @@ class SettingsViewModel @Inject constructor(
 
     fun emitCopiedMessage() {
         _snackbarMessage.tryEmit("Token in Zwischenablage kopiert.")
-    }
-
-    /** Persist the wiki endpoint URL and bearer token, then notify the UI. */
-    fun saveWikiConfig(url: String, token: String) {
-        viewModelScope.launch(Dispatchers.IO) {
-            encryptedPrefs.storeWikiEndpoint(url.trim())
-            encryptedPrefs.storeWikiToken(token.trim())
-            _wikiEndpointUrl.update { url.trim() }
-            _wikiToken.update { token.trim() }
-            _snackbarMessage.tryEmit("Wiki-Konfiguration gespeichert.")
-        }
-    }
-
-    fun toggleWikiTokenVisibility() {
-        _wikiTokenVisible.update { !it }
     }
 
     // ── Internal ───────────────────────────────────────────────────────────────

@@ -50,22 +50,6 @@ class EncryptedPrefsManager @Inject constructor(
     fun getVertexServiceAccountJson(): String? =
         prefs.getString("vertex_sa_json", null)
 
-    // ── Wiki integration ───────────────────────────────────────────────────────
-
-    fun storeWikiEndpoint(url: String) {
-        prefs.edit().putString("wiki_endpoint", url).apply()
-    }
-
-    fun getWikiEndpoint(): String? =
-        prefs.getString("wiki_endpoint", null)
-
-    fun storeWikiToken(token: String) {
-        prefs.edit().putString("wiki_token", token).apply()
-    }
-
-    fun getWikiToken(): String? =
-        prefs.getString("wiki_token", null)
-
     // ── App lifecycle ──────────────────────────────────────────────────────────
 
     fun isFirstLaunch(): Boolean = prefs.getBoolean("first_launch", true)

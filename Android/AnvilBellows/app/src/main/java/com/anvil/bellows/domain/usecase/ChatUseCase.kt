@@ -91,8 +91,9 @@ class ChatUseCase @Inject constructor(
                     }
 
                 val latency = System.currentTimeMillis() - startTime
-                val outputTokens = (accumulated.length / 4).coerceAtLeast(1)
-                val inputTokens = enrichedMessages.sumOf { it.content.length / 4 }.coerceAtLeast(1)
+                val outputTokens = estimateTokens(accumulated.toString())
+                val inputTokens  = enrichedMessages.sumOf { estimateTokens(it.content) }
+                    .coerceAtLeast(1)
 
                 requestLogDao.insert(
                     RequestLogEntity(
@@ -203,5 +204,16 @@ class ChatUseCase @Inject constructor(
         }
         parts += messages
         return parts
+    }
+
+    /**
+     * Word-count–based token estimator consistent with [ConversationRepository].
+     * Each whitespace-delimited word ≈ 1 token; each punctuation character ≈ 0.5 tokens.
+     */
+    private fun estimateTokens(text: String): Int {
+        if (text.isBlank()) return 1
+        val words       = text.trim().split(Regex("\\s+")).size
+        val punctuation = text.count { !it.isLetterOrDigit() && !it.isWhitespace() }
+        return (words + punctuation / 2).coerceAtLeast(1)
     }
 }
