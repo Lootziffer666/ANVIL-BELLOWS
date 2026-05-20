@@ -96,7 +96,17 @@ class ConversationRepository @Inject constructor(
         sessionDao.deleteById(sessionId)
     }
 
-    private fun estimateTokens(text: String): Int = (text.length / 4).coerceAtLeast(1)
+    /**
+     * Word-count–based token estimator: each whitespace-delimited word ≈ 1 token,
+     * each punctuation character ≈ 0.5 tokens. More accurate than the naive length/4
+     * formula for typical chat text.
+     */
+    private fun estimateTokens(text: String): Int {
+        if (text.isBlank()) return 1
+        val words = text.trim().split(Regex("\\s+")).size
+        val punctuation = text.count { !it.isLetterOrDigit() && !it.isWhitespace() }
+        return (words + punctuation / 2).coerceAtLeast(1)
+    }
 
     private fun ConversationSessionEntity.toDomain() = ConversationSession(
         id = id, projectId = projectId, title = title,

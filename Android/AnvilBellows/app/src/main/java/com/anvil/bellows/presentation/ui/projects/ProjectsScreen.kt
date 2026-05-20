@@ -27,6 +27,7 @@ import java.util.*
 fun ProjectsScreen(
     paddingValues: PaddingValues,
     onNavigateToMemory: () -> Unit = {},
+    onNavigateToChat: (String) -> Unit = {},
     viewModel: ProjectsViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
@@ -61,8 +62,9 @@ fun ProjectsScreen(
                     project      = project,
                     isExpanded   = project.id in state.expandedIds,
                     onToggle     = { viewModel.toggleExpanded(project.id) },
-                    onExportSession = { viewModel.exportSession(it) },
-                    onDeleteSession = { viewModel.deleteSession(it) },
+                    onExportSession  = { viewModel.exportSession(it) },
+                    onDeleteSession  = { viewModel.deleteSession(it) },
+                    onResumeSession  = onNavigateToChat,
                     expandedIds  = state.expandedIds,
                     onToggleChild = { viewModel.toggleExpanded(it) }
                 )
@@ -81,7 +83,8 @@ fun ProjectsScreen(
                     SessionItem(
                         session  = session,
                         onExport = { viewModel.exportSession(session.id) },
-                        onDelete = { viewModel.deleteSession(session.id) }
+                        onDelete = { viewModel.deleteSession(session.id) },
+                        onResume = { onNavigateToChat(session.id) }
                     )
                 }
             }
@@ -133,6 +136,7 @@ private fun ProjectNode(
     onToggle: () -> Unit,
     onExportSession: (String) -> Unit,
     onDeleteSession: (String) -> Unit,
+    onResumeSession: (String) -> Unit,
     expandedIds: Set<String>,
     onToggleChild: (String) -> Unit,
     depth: Int = 0
@@ -171,6 +175,7 @@ private fun ProjectNode(
                         session  = session,
                         onExport = { onExportSession(session.id) },
                         onDelete = { onDeleteSession(session.id) },
+                        onResume = { onResumeSession(session.id) },
                         depth    = depth + 1
                     )
                 }
@@ -181,6 +186,7 @@ private fun ProjectNode(
                         onToggle     = { onToggleChild(child.id) },
                         onExportSession = onExportSession,
                         onDeleteSession = onDeleteSession,
+                        onResumeSession = onResumeSession,
                         expandedIds  = expandedIds,
                         onToggleChild = onToggleChild,
                         depth        = depth + 1
@@ -198,6 +204,7 @@ private fun SessionItem(
     session: ConversationSession,
     onExport: () -> Unit,
     onDelete: () -> Unit,
+    onResume: () -> Unit,
     depth: Int = 0
 ) {
     val dateStr = remember(session.updatedAt) {
@@ -223,6 +230,14 @@ private fun SessionItem(
                         if (session.handoffCount > 0) " • ${session.handoffCount} handoffs" else "",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.outline
+            )
+        }
+        // Resume — opens the session in the chat screen
+        IconButton(onClick = onResume, modifier = Modifier.size(32.dp)) {
+            Icon(
+                Icons.Default.PlayArrow, "Fortsetzen",
+                modifier = Modifier.size(16.dp),
+                tint = MaterialTheme.colorScheme.primary
             )
         }
         IconButton(onClick = onExport, modifier = Modifier.size(32.dp)) {

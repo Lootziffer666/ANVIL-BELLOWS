@@ -34,12 +34,19 @@ fun SettingsScreen(
     val isServerRunning   by viewModel.isServerRunning.collectAsStateWithLifecycle()
     val currentToken      by viewModel.currentToken.collectAsStateWithLifecycle()
     val tokenVisible      by viewModel.tokenVisible.collectAsStateWithLifecycle()
+    val wikiEndpointUrl   by viewModel.wikiEndpointUrl.collectAsStateWithLifecycle()
+    val wikiToken         by viewModel.wikiToken.collectAsStateWithLifecycle()
+    val wikiTokenVisible  by viewModel.wikiTokenVisible.collectAsStateWithLifecycle()
 
     val snackbarHostState = remember { SnackbarHostState() }
     val scope             = rememberCoroutineScope()
     val context           = LocalContext.current
 
     var showRotateDialog by remember { mutableStateOf(false) }
+
+    // Local mutable state for the wiki fields so the user can edit before saving
+    var wikiUrlDraft   by remember(wikiEndpointUrl) { mutableStateOf(wikiEndpointUrl) }
+    var wikiTokenDraft by remember(wikiToken)       { mutableStateOf(wikiToken) }
 
     // Collect snackbar messages
     LaunchedEffect(Unit) {
@@ -207,6 +214,78 @@ fun SettingsScreen(
                             Spacer(Modifier.width(4.dp))
                             Text("Rotieren")
                         }
+                    }
+                }
+            }
+
+            // ── Wiki-Integration ───────────────────────────────────────────────
+            item {
+                SectionHeader("Wiki-Integration")
+            }
+            item {
+                SettingsCard {
+                    Text(
+                        "Endpoint-URL und Bearer-Token für die Wiki-Exportfunktion.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                    Spacer(Modifier.height(12.dp))
+
+                    // Endpoint URL field
+                    OutlinedTextField(
+                        value = wikiUrlDraft,
+                        onValueChange = { wikiUrlDraft = it },
+                        label = { Text("Endpoint-URL") },
+                        placeholder = { Text("https://wiki.example.com/api/") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        textStyle = MaterialTheme.typography.bodySmall
+                            .copy(fontFamily = FontFamily.Monospace),
+                        leadingIcon = {
+                            Icon(
+                                Icons.Default.Link, null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    )
+
+                    Spacer(Modifier.height(8.dp))
+
+                    // Wiki token field
+                    val displayWikiToken = if (wikiTokenVisible) wikiTokenDraft
+                    else if (wikiTokenDraft.isNotEmpty()) wikiTokenDraft.take(8) + "••••••••••••••••"
+                    else ""
+                    OutlinedTextField(
+                        value = displayWikiToken,
+                        onValueChange = { if (wikiTokenVisible) wikiTokenDraft = it },
+                        label = { Text("Bearer Token") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        textStyle = MaterialTheme.typography.bodySmall
+                            .copy(fontFamily = FontFamily.Monospace),
+                        trailingIcon = {
+                            IconButton(onClick = { viewModel.toggleWikiTokenVisibility() }) {
+                                Icon(
+                                    imageVector = if (wikiTokenVisible)
+                                        Icons.Default.VisibilityOff
+                                    else
+                                        Icons.Default.Visibility,
+                                    contentDescription = "Sichtbarkeit umschalten"
+                                )
+                            }
+                        }
+                    )
+
+                    Spacer(Modifier.height(12.dp))
+
+                    Button(
+                        onClick = { viewModel.saveWikiConfig(wikiUrlDraft, wikiTokenDraft) },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = wikiUrlDraft.isNotBlank()
+                    ) {
+                        Icon(Icons.Default.Save, null, Modifier.size(16.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Speichern")
                     }
                 }
             }

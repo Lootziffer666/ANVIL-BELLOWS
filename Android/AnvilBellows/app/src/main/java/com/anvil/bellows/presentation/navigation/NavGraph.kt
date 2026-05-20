@@ -133,11 +133,23 @@ fun AppNavHost() {
                 )
             }
 
-            // Projects – Memory button in top-bar triggers MEMORY route
+            // Projects – Memory button in top-bar triggers MEMORY route;
+            // Resume button on a session loads it into the shared ChatViewModel
+            // and navigates to the Chat tab.
             composable(Screen.Projects.route) {
                 ProjectsScreen(
                     paddingValues      = innerPadding,
-                    onNavigateToMemory = { navController.navigate(Routes.MEMORY) }
+                    onNavigateToMemory = { navController.navigate(Routes.MEMORY) },
+                    onNavigateToChat   = { sessionId ->
+                        chatViewModel.loadSession(sessionId)
+                        navController.navigate(Screen.Chat.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState    = true
+                        }
+                    }
                 )
             }
 
