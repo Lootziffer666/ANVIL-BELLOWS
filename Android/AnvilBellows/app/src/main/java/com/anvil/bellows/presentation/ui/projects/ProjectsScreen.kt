@@ -26,13 +26,21 @@ import java.util.*
 @Composable
 fun ProjectsScreen(
     paddingValues: PaddingValues,
+    onNavigateToMemory: () -> Unit = {},
     viewModel: ProjectsViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
-            TopAppBar(title = { Text("Projects", fontWeight = FontWeight.Bold) })
+            TopAppBar(
+                title = { Text("Projects", fontWeight = FontWeight.Bold) },
+                actions = {
+                    IconButton(onClick = onNavigateToMemory) {
+                        Icon(Icons.Default.Psychology, contentDescription = "Memory")
+                    }
+                }
+            )
         },
         floatingActionButton = {
             FloatingActionButton(onClick = { viewModel.showCreateDialog() }) {
@@ -50,12 +58,12 @@ fun ProjectsScreen(
         ) {
             items(state.projects) { project ->
                 ProjectNode(
-                    project = project,
-                    isExpanded = project.id in state.expandedIds,
-                    onToggle = { viewModel.toggleExpanded(project.id) },
+                    project      = project,
+                    isExpanded   = project.id in state.expandedIds,
+                    onToggle     = { viewModel.toggleExpanded(project.id) },
                     onExportSession = { viewModel.exportSession(it) },
                     onDeleteSession = { viewModel.deleteSession(it) },
-                    expandedIds = state.expandedIds,
+                    expandedIds  = state.expandedIds,
                     onToggleChild = { viewModel.toggleExpanded(it) }
                 )
             }
@@ -63,11 +71,15 @@ fun ProjectsScreen(
             if (state.unorganizedSessions.isNotEmpty()) {
                 item {
                     Spacer(Modifier.height(8.dp))
-                    Text("Unorganized", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.outline)
+                    Text(
+                        "Unorganized",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.outline
+                    )
                 }
                 items(state.unorganizedSessions) { session ->
                     SessionItem(
-                        session = session,
+                        session  = session,
                         onExport = { viewModel.exportSession(session.id) },
                         onDelete = { viewModel.deleteSession(session.id) }
                     )
@@ -76,6 +88,7 @@ fun ProjectsScreen(
         }
     }
 
+    // ── Create Project dialog ──────────────────────────────────────────────────
     if (state.showCreateProjectDialog) {
         CreateProjectDialog(
             onConfirm = { name, color ->
@@ -86,6 +99,7 @@ fun ProjectsScreen(
         )
     }
 
+    // ── Export dialog ──────────────────────────────────────────────────────────
     state.exportMarkdown?.let { markdown ->
         AlertDialog(
             onDismissRequest = { viewModel.dismissExport() },
@@ -110,6 +124,8 @@ fun ProjectsScreen(
     }
 }
 
+// ── ProjectNode ────────────────────────────────────────────────────────────────
+
 @Composable
 private fun ProjectNode(
     project: Project,
@@ -129,10 +145,16 @@ private fun ProjectNode(
             IconButton(onClick = onToggle, modifier = Modifier.size(32.dp)) {
                 Icon(
                     if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                    null, modifier = Modifier.size(18.dp)
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp)
                 )
             }
-            Icon(Icons.Default.Folder, null, tint = Color(android.graphics.Color.parseColor(project.color)), modifier = Modifier.size(20.dp))
+            Icon(
+                Icons.Default.Folder,
+                contentDescription = null,
+                tint = Color(android.graphics.Color.parseColor(project.color)),
+                modifier = Modifier.size(20.dp)
+            )
             Spacer(Modifier.width(8.dp))
             Text(project.name, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
             Text(
@@ -146,28 +168,30 @@ private fun ProjectNode(
             Column {
                 project.sessions.forEach { session ->
                     SessionItem(
-                        session = session,
+                        session  = session,
                         onExport = { onExportSession(session.id) },
                         onDelete = { onDeleteSession(session.id) },
-                        depth = depth + 1
+                        depth    = depth + 1
                     )
                 }
                 project.children.forEach { child ->
                     ProjectNode(
-                        project = child,
-                        isExpanded = child.id in expandedIds,
-                        onToggle = { onToggleChild(child.id) },
+                        project      = child,
+                        isExpanded   = child.id in expandedIds,
+                        onToggle     = { onToggleChild(child.id) },
                         onExportSession = onExportSession,
                         onDeleteSession = onDeleteSession,
-                        expandedIds = expandedIds,
+                        expandedIds  = expandedIds,
                         onToggleChild = onToggleChild,
-                        depth = depth + 1
+                        depth        = depth + 1
                     )
                 }
             }
         }
     }
 }
+
+// ── SessionItem ────────────────────────────────────────────────────────────────
 
 @Composable
 private fun SessionItem(
@@ -185,12 +209,18 @@ private fun SessionItem(
             .padding(start = (depth * 16 + 32).dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(Icons.AutoMirrored.Filled.Chat, null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.outline)
+        Icon(
+            Icons.AutoMirrored.Filled.Chat,
+            contentDescription = null,
+            modifier = Modifier.size(16.dp),
+            tint = MaterialTheme.colorScheme.outline
+        )
         Spacer(Modifier.width(8.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(session.title, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
             Text(
-                "$dateStr • ${session.currentProviderId}${if (session.handoffCount > 0) " • ${session.handoffCount} handoffs" else ""}",
+                "$dateStr • ${session.currentProviderId}" +
+                        if (session.handoffCount > 0) " • ${session.handoffCount} handoffs" else "",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.outline
             )
@@ -199,52 +229,71 @@ private fun SessionItem(
             Icon(Icons.Default.FileUpload, "Export", modifier = Modifier.size(16.dp))
         }
         IconButton(onClick = onDelete, modifier = Modifier.size(32.dp)) {
-            Icon(Icons.Default.Delete, "Delete", modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.error)
+            Icon(
+                Icons.Default.DeleteOutline, "Löschen",
+                modifier = Modifier.size(16.dp),
+                tint = MaterialTheme.colorScheme.error
+            )
         }
     }
 }
 
+// ── CreateProjectDialog ────────────────────────────────────────────────────────
+
+private val PROJECT_COLORS = listOf(
+    "#FF5A5F", "#00A699", "#FC642D", "#484848",
+    "#767676", "#8B5CF6", "#3B82F6", "#10B981"
+)
+
 @Composable
 private fun CreateProjectDialog(
-    onConfirm: (String, String) -> Unit,
+    onConfirm: (name: String, color: String) -> Unit,
     onDismiss: () -> Unit
 ) {
-    var name by remember { mutableStateOf("") }
-    var selectedColor by remember { mutableStateOf("#FF5A5F") }
-    val colors = listOf("#FF5A5F", "#00A699", "#F7B731", "#2196F3", "#9C27B0", "#4CAF50")
+    var name          by remember { mutableStateOf("") }
+    var selectedColor by remember { mutableStateOf(PROJECT_COLORS.first()) }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("New Project") },
+        title = { Text("Neues Projekt") },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("Project Name") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true
+                    label = { Text("Name") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
                 )
-                Text("Color", style = MaterialTheme.typography.labelMedium)
+                Text("Farbe", style = MaterialTheme.typography.labelMedium)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    colors.forEach { color ->
-                        Surface(
-                            onClick = { selectedColor = color },
-                            color = Color(android.graphics.Color.parseColor(color)),
-                            shape = androidx.compose.foundation.shape.CircleShape,
-                            modifier = Modifier.size(32.dp),
-                            shadowElevation = if (color == selectedColor) 4.dp else 0.dp
-                        ) {}
+                    PROJECT_COLORS.forEach { hex ->
+                        val selected = hex == selectedColor
+                        IconButton(
+                            onClick = { selectedColor = hex },
+                            modifier = Modifier.size(32.dp)
+                        ) {
+                            Icon(
+                                if (selected) Icons.Default.CheckCircle else Icons.Default.Circle,
+                                contentDescription = hex,
+                                tint = Color(android.graphics.Color.parseColor(hex)),
+                                modifier = Modifier.size(if (selected) 28.dp else 24.dp)
+                            )
+                        }
                     }
                 }
             }
         },
         confirmButton = {
             Button(
-                onClick = { onConfirm(name, selectedColor) },
+                onClick = { if (name.isNotBlank()) onConfirm(name.trim(), selectedColor) },
                 enabled = name.isNotBlank()
-            ) { Text("Create") }
+            ) {
+                Text("Erstellen")
+            }
         },
-        dismissButton = { TextButton(onDismiss) { Text("Cancel") } }
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Abbrechen") }
+        }
     )
 }
