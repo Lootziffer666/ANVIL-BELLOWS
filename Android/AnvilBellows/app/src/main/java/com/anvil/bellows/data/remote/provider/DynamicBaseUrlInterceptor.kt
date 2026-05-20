@@ -1,37 +1,94 @@
 package com.anvil.bellows.data.remote.provider
 
-import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.Interceptor
 import okhttp3.Response
-import javax.inject.Inject
-import javax.inject.Singleton
+import okhttp3.HttpUrl.Companion.toHttpUrl
 
-@Singleton
-class DynamicBaseUrlInterceptor @Inject constructor() : Interceptor {
+/**
+ * Replaces the Retrofit base URL at call-time based on the
+ * [X_TARGET_BASE_URL] request header.
+ *
+ * This allows a single Retrofit service instance to route to different
+ * provider endpoints without rebuilding the service.
+ *
+ * ── Path combination logic ──────────────────────────────────────────────────
+ *
+ * Given:
+ *   targetBase    = "https://api.anthropic.com/v1/"
+ *   Retrofit path = "v1/chat/completions"           (from @POST annotation)
+ *
+ * Naïve concatenation produces "/v1/v1/chat/completions" — a duplicate-segment
+ * bug triggered whenever the base URL already includes the version prefix that
+ * Retrofit appends to the relative endpoint path.
+ *
+ * Fix: if the last path segment of basePath equals the first path segment of
+ * the Retrofit endpoint path, the duplicate is stripped:
+ *
+ *   basePath         = "/v1"     lastSegment = "v1"
+ *   origPath (raw)   = "v1/chat/completions"
+ *   firstSegment     = "v1"   → match → strip → "chat/completions"
+ *   combinedPath     = "/v1/chat/completions"  ✓
+ *
+ * For a base URL that does NOT end with the version prefix
+ * (e.g. "https://api.groq.com/openai/") the logic is a no-op:
+ *
+ *   basePath         = "/openai"  lastSegment = "openai"
+ *   origPath (raw)   = "v1/chat/completions"
+ *   firstSegment     = "v1"       → no match → keep as-is
+ *   combinedPath     = "/openai/v1/chat/completions"  ✓
+ *
+ * INVARIANT: this interceptor is stateless and thread-safe.
+ *
+ * @see com.anvil.bellows.data.remote.api.LlmApiService
+ */
+class DynamicBaseUrlInterceptor : Interceptor {
+
+    companion object {
+        const val X_TARGET_BASE_URL = "X-Target-Base-Url"
+    }
 
     override fun intercept(chain: Interceptor.Chain): Response {
         val original = chain.request()
-        val targetBase = original.header("X-Target-Base-Url")
+        val targetBase = original.header(X_TARGET_BASE_URL)
             ?: return chain.proceed(original)
 
         val parsedBase = targetBase.trimEnd('/').toHttpUrl()
+        val basePath   = parsedBase.encodedPath.trimEnd('/')       // e.g. "/v1" or "/openai" or ""
+        val origPath   = original.url.encodedPath.trimStart('/')   // e.g. "v1/chat/completions"
 
-        // Combine base path with the endpoint path from the Retrofit @POST annotation.
-        // e.g. base="/openai/" + endpoint="v1/chat/completions" → "/openai/v1/chat/completions"
-        val basePath = parsedBase.encodedPath.trimEnd('/')
-        val originalPath = original.url.encodedPath.trimStart('/')
-        val combinedPath = if (basePath.isEmpty()) "/$originalPath" else "$basePath/$originalPath"
+        // ── De-duplicate prefix segment ─────────────────────────────────────
+        // Only strip when the basePath's last segment == origPath's first segment
+        // to avoid a spurious double-version-prefix in the final URL.
+        val deduped = if (basePath.isNotEmpty()) {
+            val lastBase  = basePath.substringAfterLast('/')
+            val firstOrig = origPath.substringBefore('/')
+            if (lastBase.isNotEmpty() && lastBase == firstOrig) {
+                // e.g. basePath="/v1", origPath="v1/chat/completions" → "chat/completions"
+                origPath.removePrefix("$firstOrig/")
+            } else {
+                origPath
+            }
+        } else {
+            origPath
+        }
 
-        val newUrl = original.url.newBuilder()
-            .scheme(parsedBase.scheme)
-            .host(parsedBase.host)
-            .port(parsedBase.port)
+        val combinedPath = if (basePath.isEmpty()) "/$deduped" else "$basePath/$deduped"
+
+        val newUrl = parsedBase.newBuilder()
             .encodedPath(combinedPath)
+            .apply {
+                // Carry over any query parameters from the original request
+                original.url.queryParameterNames.forEach { name ->
+                    original.url.queryParameterValues(name).forEach { value ->
+                        addQueryParameter(name, value)
+                    }
+                }
+            }
             .build()
 
         val newRequest = original.newBuilder()
             .url(newUrl)
-            .removeHeader("X-Target-Base-Url")
+            .removeHeader(X_TARGET_BASE_URL)
             .build()
 
         return chain.proceed(newRequest)

@@ -12,7 +12,6 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -40,37 +39,45 @@ class DatabaseInitializer @Inject constructor(
     private suspend fun seedProviders() {
         val providerEntities = ProviderRegistry.defaults.map { default ->
             ProviderConfigEntity(
-                id = default.id,
-                name = default.name,
-                baseUrl = default.baseUrl,
-                apiKeyAlias = "api_key_${default.id}",
-                rpmLimit = default.rpmLimit,
-                rpdLimit = default.rpdLimit,
-                contextWindow = default.contextWindow,
-                maxOutput = default.maxOutput,
-                tier = default.tier,
-                isByok = default.isByok,
-                enabled = !default.isByok,
-                authType = default.authType,
-                selectedModel = default.models.firstOrNull()?.modelId ?: "",
-                notes = default.notes,
-                registrationUrl = default.registrationUrl
+                id                 = default.id,
+                name               = default.name,
+                baseUrl            = default.baseUrl,
+                apiKeyAlias        = "api_key_${default.id}",
+                rpmLimit           = default.rpmLimit,
+                rpdLimit           = default.rpdLimit,
+                contextWindow      = default.contextWindow,
+                maxOutput          = default.maxOutput,
+                tier               = default.tier,
+                isByok             = default.isByok,
+                enabled            = !default.isByok,
+                authType           = default.authType,
+                selectedModel      = default.models.firstOrNull()?.modelId ?: "",
+                notes              = default.notes,
+                registrationUrl    = default.registrationUrl,
+                // DB v4 fields
+                consoleUrl         = default.consoleUrl,
+                authHeaderName     = default.authHeaderName,
+                noAuth             = default.noAuth,
+                deprecated         = default.deprecated,
+                deprecationNotice  = default.deprecationNotice,
+                serviceKinds       = default.serviceKinds.joinToString(","),
+                clipboardPattern   = default.clipboardPattern
             )
         }
         providerConfigDao.upsertAll(providerEntities)
 
         val modelEntities = ProviderRegistry.defaults.flatMap { default ->
-            default.models.mapIndexed { _, model ->
+            default.models.map { model ->
                 ModelConfigEntity(
-                    id = "${default.id}_${model.modelId}",
-                    providerId = default.id,
-                    modelId = model.modelId,
-                    displayName = model.displayName,
-                    contextWindow = model.contextWindow,
-                    maxOutput = model.maxOutput,
-                    rpmLimit = model.rpmLimit,
-                    rpdLimit = model.rpdLimit,
-                    supportsVision = model.supportsVision,
+                    id               = "${default.id}_${model.modelId}",
+                    providerId       = default.id,
+                    modelId          = model.modelId,
+                    displayName      = model.displayName,
+                    contextWindow    = model.contextWindow,
+                    maxOutput        = model.maxOutput,
+                    rpmLimit         = model.rpmLimit,
+                    rpdLimit         = model.rpdLimit,
+                    supportsVision   = model.supportsVision,
                     supportsReasoning = model.supportsReasoning
                 )
             }
@@ -83,41 +90,41 @@ class DatabaseInitializer @Inject constructor(
         val now = System.currentTimeMillis()
         val presets = listOf(
             AgentPresetEntity(
-                id = "builtin_general",
-                name = "General Chat",
-                description = "No special instructions — normal chat.",
+                id           = "builtin_general",
+                name         = "General Chat",
+                description  = "No special instructions — normal chat.",
                 systemPrompt = "",
-                isPinned = true,
-                isBuiltIn = true,
-                createdAt = now,
-                updatedAt = now
+                isPinned     = true,
+                isBuiltIn    = true,
+                createdAt    = now,
+                updatedAt    = now
             ),
             AgentPresetEntity(
-                id = "builtin_repo_auditor",
-                name = "Repo Auditor",
-                description = "Analyzes code for bugs, security issues, and maintainability.",
+                id           = "builtin_repo_auditor",
+                name         = "Repo Auditor",
+                description  = "Analyzes code for bugs, security issues, and maintainability.",
                 systemPrompt = "You are an expert code reviewer. Analyze code for bugs, security vulnerabilities, and maintainability issues. Be concise, precise, and actionable. Prioritize critical issues first.",
-                isBuiltIn = true,
-                createdAt = now,
-                updatedAt = now
+                isBuiltIn    = true,
+                createdAt    = now,
+                updatedAt    = now
             ),
             AgentPresetEntity(
-                id = "builtin_prompt_smith",
-                name = "Prompt Smith",
-                description = "Helps craft, refine, and optimize LLM prompts.",
+                id           = "builtin_prompt_smith",
+                name         = "Prompt Smith",
+                description  = "Helps craft, refine, and optimize LLM prompts.",
                 systemPrompt = "You are an expert prompt engineer. Help craft, refine, and optimize prompts for large language models. Explain your reasoning and offer alternative formulations.",
-                isBuiltIn = true,
-                createdAt = now,
-                updatedAt = now
+                isBuiltIn    = true,
+                createdAt    = now,
+                updatedAt    = now
             ),
             AgentPresetEntity(
-                id = "builtin_prd_sharpener",
-                name = "PRD Sharpener",
-                description = "Sharpens product requirements documents.",
+                id           = "builtin_prd_sharpener",
+                name         = "PRD Sharpener",
+                description  = "Sharpens product requirements documents.",
                 systemPrompt = "You are a senior product manager. Help sharpen product requirements documents by identifying ambiguities, missing edge cases, and success criteria. Ask clarifying questions when needed.",
-                isBuiltIn = true,
-                createdAt = now,
-                updatedAt = now
+                isBuiltIn    = true,
+                createdAt    = now,
+                updatedAt    = now
             )
         )
         presets.forEach { agentPresetDao.upsert(it) }
