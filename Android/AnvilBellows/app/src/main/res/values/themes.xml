@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.AnvilBellows" parent="android:Theme.Material.Light.NoActionBar" />
+    <!--
+        Bridge theme: Compose handles all Material3 colours at runtime.
+        Parent → Theme.Material3.DayNight.NoActionBar replaces the old
+        android:Theme.Material.Light parent that caused the default
+        purple/white system-chrome flash before Compose's first frame.
+
+        enableEdgeToEdge() in MainActivity makes status/nav bars transparent;
+        android:windowBackground here only prevents the brief cold-launch
+        canvas flicker (Warm Paper in light / Charcoal Room in dark).
+    -->
+    <style name="Theme.AnvilBellows" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- IIG canvas colour — res/values/colors.xml (light) + values-night/colors.xml (dark) -->
+        <item name="android:windowBackground">@color/iig_canvas</item>
+        <!-- Transparent system bars — managed by enableEdgeToEdge() -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
 </resources>

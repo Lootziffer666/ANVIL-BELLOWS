@@ -19,7 +19,7 @@ val WarmPaperTextBody    = Color(0xFF3B3B3B)
 val WarmPaperTextSoft    = Color(0xFF6B6258)
 val WarmPaperTextFaint   = Color(0xFF8A7D70)
 
-// ── Charcoal Room (Dark Mode) ──────────────────────────────
+// ── Charcoal Room (Dark Mode) ─────────────────────────────
 val CharcoalCanvas       = Color(0xFF1A1D21)
 val CharcoalPaper        = Color(0xFF15171A)
 val CharcoalSurface      = Color(0xFF24272B)
@@ -63,7 +63,7 @@ val BorderSubtleDark     = Color(0x2EF6F2EB)  // 18% alpha
 val BorderMediumDark     = Color(0x4DF6F2EB)  // 30% alpha
 val BorderStrongDark     = Color(0x7AF6F2EB)  // 48% alpha
 
-// ── Seal Colors ────────────────────────────────────────────
+// ── Seal Colors ───────────────────────────────────────────
 val SealBgLight          = Color(0xFFF4F0EA)
 val SealLineLight        = Color(0xFF8F1D1D)
 
@@ -85,7 +85,14 @@ val BabuTeal             = IigSuccessDark
 /** Unavailability / error indicator — maps to IIG oxidrot hover. */
 val RauschRed            = OxidRedHover
 
-// ── Tier color indicators ──────────────────────────────────
+// ── ProvidersScreen aliases ────────────────────────────────
+/** BYOK / paid-tier indicator chip — brownish-orange Clay tone. */
+val ByokColor            = Clay        // #B35A3C
+
+/** Rate-limit gauge fill — warm amber accent. */
+val AccentAmber          = AmberDark   // #D2A650
+
+// ── Tier color indicators ─────────────────────────────────
 val TierOneColor   = IigSuccess
 val TierTwoColor   = IigInfo
 val TierThreeColor = Honey
