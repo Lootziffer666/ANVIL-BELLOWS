@@ -29,10 +29,17 @@ class LlmRepository @Inject constructor(
         provider: ProviderConfigEntity,
         messages: List<ChatMessage>
     ): Flow<String> = flow {
-        val apiKey = encryptedPrefs.getApiKey(provider.id)
-            ?: throw IllegalStateException("No API key for ${provider.name}")
+        // ── Auth resolution ────────────────────────────────────────────────────
+        // noAuth providers (e.g. Pollinations) require no key; passing "" causes
+        // DynamicBaseUrlInterceptor to strip the Authorization header entirely.
+        val authorization = if (provider.noAuth) {
+            ""
+        } else {
+            val apiKey = encryptedPrefs.getApiKey(provider.id)
+                ?: throw IllegalStateException("No API key for ${provider.name}")
+            buildAuthHeader(provider, apiKey)
+        }
 
-        val authorization = buildAuthHeader(provider, apiKey)
         val request = ChatRequest(
             model = provider.selectedModel,
             messages = messages.map { MessageDto(it.role, it.content) },
@@ -45,24 +52,31 @@ class LlmRepository @Inject constructor(
 
         try {
             val call = llmApiService.chatCompletionStream(
-                baseUrl = provider.baseUrl,
+                baseUrl      = provider.baseUrl,
                 authorization = authorization,
-                request = request
+                request      = request
             )
             val response = call.execute()
             if (!response.isSuccessful) {
                 throw HttpException(response)
             }
-            val body = response.body() ?: throw IOException("Empty response body from ${provider.name}")
+            val body = response.body()
+                ?: throw IOException("Empty response body from ${provider.name}")
             SseStreamParser.parseStream(body, gson).collect { emit(it) }
         } finally {
             if (useZaiSemaphore) rateLimitTracker.getZaiSemaphore().release()
         }
     }.flowOn(Dispatchers.IO)
 
+    // ── Auth header construction ────────────────────────────────────────────────
+    // Anthropic uses x-api-key header (handled by authHeaderName in the entity),
+    // but the LlmApiService always sends the value as "Authorization". Providers
+    // that deviate from standard Bearer auth should instead use a custom
+    // authHeaderName configured in ProviderRegistry and respected by the server.
     private fun buildAuthHeader(provider: ProviderConfigEntity, apiKey: String): String =
         when (provider.authType) {
-            "VERTEX" -> "Bearer $apiKey"
-            else -> "Bearer $apiKey"
+            "VERTEX"  -> "Bearer $apiKey"
+            "API_KEY" -> if (provider.authHeaderName == "Authorization") "Bearer $apiKey" else apiKey
+            else      -> "Bearer $apiKey"
         }
 }

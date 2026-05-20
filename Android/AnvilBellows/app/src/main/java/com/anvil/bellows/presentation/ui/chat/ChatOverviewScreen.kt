@@ -53,6 +53,11 @@ fun ChatOverviewScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
+            // ── BELLOWS Local API info banner ─────────────────────────────────
+            item {
+                LocalServerCard()
+            }
+
             val pinned = state.presets.filter { it.isPinned }
             val rest = state.presets.filter { !it.isPinned }
 

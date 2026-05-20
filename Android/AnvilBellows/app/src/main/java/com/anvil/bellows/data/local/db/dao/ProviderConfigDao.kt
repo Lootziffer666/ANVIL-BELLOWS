@@ -9,6 +9,10 @@ interface ProviderConfigDao {
     @Query("SELECT * FROM provider_configs ORDER BY tier ASC, name ASC")
     fun observeAll(): Flow<List<ProviderConfigEntity>>
 
+    /** One-shot fetch of all providers (used by ApiKeyWizardViewModel). */
+    @Query("SELECT * FROM provider_configs ORDER BY tier ASC, name ASC")
+    suspend fun getAll(): List<ProviderConfigEntity>
+
     @Query("SELECT * FROM provider_configs WHERE enabled = 1 ORDER BY tier ASC, rpmLimit DESC")
     suspend fun getEnabledProviders(): List<ProviderConfigEntity>
 

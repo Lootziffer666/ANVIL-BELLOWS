@@ -12,6 +12,10 @@ import javax.inject.Singleton
 class EncryptedPrefsManager @Inject constructor(
     @ApplicationContext private val context: Context
 ) {
+    companion object {
+        const val KEY_LOCAL_API_TOKEN = "local_api_token"
+    }
+
     private val masterKey = MasterKey.Builder(context)
         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
         .build()
@@ -24,6 +28,8 @@ class EncryptedPrefsManager @Inject constructor(
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
     )
 
+    // ── Provider API keys ──────────────────────────────────────────────────────
+
     fun storeApiKey(providerId: String, apiKey: String) {
         prefs.edit().putString("api_key_$providerId", apiKey).apply()
     }
@@ -35,12 +41,16 @@ class EncryptedPrefsManager @Inject constructor(
         prefs.edit().remove("api_key_$providerId").apply()
     }
 
+    // ── Vertex AI Service Account JSON ─────────────────────────────────────────
+
     fun storeVertexServiceAccountJson(json: String) {
         prefs.edit().putString("vertex_sa_json", json).apply()
     }
 
     fun getVertexServiceAccountJson(): String? =
         prefs.getString("vertex_sa_json", null)
+
+    // ── Wiki integration ───────────────────────────────────────────────────────
 
     fun storeWikiEndpoint(url: String) {
         prefs.edit().putString("wiki_endpoint", url).apply()
@@ -56,11 +66,15 @@ class EncryptedPrefsManager @Inject constructor(
     fun getWikiToken(): String? =
         prefs.getString("wiki_token", null)
 
+    // ── App lifecycle ──────────────────────────────────────────────────────────
+
     fun isFirstLaunch(): Boolean = prefs.getBoolean("first_launch", true)
 
     fun markFirstLaunchDone() {
         prefs.edit().putBoolean("first_launch", false).apply()
     }
+
+    // ── Generic helpers ────────────────────────────────────────────────────────
 
     fun storeString(key: String, value: String) {
         prefs.edit().putString(key, value).apply()
@@ -69,9 +83,29 @@ class EncryptedPrefsManager @Inject constructor(
     fun getString(key: String, default: String? = null): String? =
         prefs.getString(key, default)
 
-    fun getOrCreateLocalApiToken(): String {
-        return getString("local_api_token") ?: java.util.UUID.randomUUID().toString().also {
-            storeString("local_api_token", it)
-        }
+    // ── Local NanoHTTPD server token ───────────────────────────────────────────
+
+    /**
+     * Returns the stored local API token, or null if none has been set yet.
+     * Used by [LocalServerViewModel] to populate the UI without auto-generating.
+     */
+    fun getLocalApiToken(): String? =
+        prefs.getString(KEY_LOCAL_API_TOKEN, null)
+
+    /**
+     * Stores a caller-supplied local API token.
+     * Used by [LocalServerViewModel.generateToken] / [LocalServerViewModel.regenerateToken].
+     */
+    fun storeLocalApiToken(token: String) {
+        prefs.edit().putString(KEY_LOCAL_API_TOKEN, token).apply()
     }
+
+    /**
+     * Returns the existing token or auto-generates and persists a new UUID-based one.
+     * Kept for backward compatibility with existing NanoHTTPD server setup code.
+     */
+    fun getOrCreateLocalApiToken(): String =
+        getLocalApiToken() ?: java.util.UUID.randomUUID().toString().also {
+            storeLocalApiToken(it)
+        }
 }

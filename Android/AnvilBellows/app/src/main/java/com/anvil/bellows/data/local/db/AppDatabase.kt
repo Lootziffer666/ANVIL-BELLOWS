@@ -19,7 +19,7 @@ import com.anvil.bellows.data.local.db.entity.*
         HandoffLogEntity::class,
         AgentPresetEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -61,6 +61,28 @@ abstract class AppDatabase : RoomDatabase() {
                     )
                 """.trimIndent())
                 database.execSQL("ALTER TABLE conversation_sessions ADD COLUMN presetId TEXT")
+            }
+        }
+
+        /**
+         * v3 → v4 — Provider metadata expansion.
+         *
+         * Adds wizard/routing metadata columns to provider_configs.
+         * All columns are NOT NULL with safe defaults so existing rows remain valid.
+         *
+         * CHECKPOINT [DB-3-4]: If migration crashes on a device, the fallback path
+         * is destructive re-creation (see DatabaseModule.kt fallbackToDestructiveMigration).
+         * Users lose saved configs but all provider defaults are re-seeded automatically.
+         */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(database: SupportSQLiteDatabase) {
+                database.execSQL("ALTER TABLE provider_configs ADD COLUMN consoleUrl TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE provider_configs ADD COLUMN authHeaderName TEXT NOT NULL DEFAULT 'Authorization'")
+                database.execSQL("ALTER TABLE provider_configs ADD COLUMN noAuth INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("ALTER TABLE provider_configs ADD COLUMN deprecated INTEGER NOT NULL DEFAULT 0")
+                database.execSQL("ALTER TABLE provider_configs ADD COLUMN deprecationNotice TEXT NOT NULL DEFAULT ''")
+                database.execSQL("ALTER TABLE provider_configs ADD COLUMN serviceKinds TEXT NOT NULL DEFAULT 'llm'")
+                database.execSQL("ALTER TABLE provider_configs ADD COLUMN clipboardPattern TEXT NOT NULL DEFAULT ''")
             }
         }
     }

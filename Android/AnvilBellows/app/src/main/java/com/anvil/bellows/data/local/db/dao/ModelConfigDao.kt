@@ -12,6 +12,10 @@ interface ModelConfigDao {
     @Query("SELECT * FROM model_configs WHERE providerId = :providerId")
     suspend fun getByProvider(providerId: String): List<ModelConfigEntity>
 
+    /** Alias used by ProvidersViewModel to populate model summaries per provider. */
+    @Query("SELECT * FROM model_configs WHERE providerId = :providerId")
+    suspend fun getModelsForProvider(providerId: String): List<ModelConfigEntity>
+
     @Upsert
     suspend fun upsertAll(entities: List<ModelConfigEntity>)
 

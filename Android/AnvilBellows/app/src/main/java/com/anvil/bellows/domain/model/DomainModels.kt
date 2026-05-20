@@ -71,7 +71,13 @@ data class QuotaStatus(
     val provider: Provider,
     val rpmUsed: Int,
     val rpdUsed: Int,
-    val rpmPercent: Float = if (provider.rpmLimit > 0) rpmUsed.toFloat() / provider.rpmLimit else 0f,
-    val rpdPercent: Float = if (provider.rpdLimit < Int.MAX_VALUE) rpdUsed.toFloat() / provider.rpdLimit else 0f,
+    /** Total completed requests in the last 24 hours. */
+    val totalRequestsToday: Int = 0,
+    /** Total tokens consumed (input + output) in the last 24 hours. */
+    val totalTokensToday: Long = 0L,
+    val rpmPercent: Float = if (provider.rpmLimit > 0 && provider.rpmLimit < Int.MAX_VALUE)
+        rpmUsed.toFloat() / provider.rpmLimit else 0f,
+    val rpdPercent: Float = if (provider.rpdLimit > 0 && provider.rpdLimit < Int.MAX_VALUE)
+        rpdUsed.toFloat() / provider.rpdLimit else 0f,
     val isAvailable: Boolean
 )
