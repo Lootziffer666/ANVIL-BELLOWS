@@ -37,6 +37,13 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
  *   firstSegment     = "v1"       → no match → keep as-is
  *   combinedPath     = "/openai/v1/chat/completions"  ✓
  *
+ * ── noAuth handling ────────────────────────────────────────────────────────
+ *
+ * Providers with noAuth=true (e.g. Pollinations) must not receive any
+ * Authorization header. Callers pass an empty string as the authorization
+ * parameter; this interceptor detects blank/empty Authorization headers and
+ * removes them before forwarding the request.
+ *
  * INVARIANT: this interceptor is stateless and thread-safe.
  *
  * @see com.anvil.bellows.data.remote.api.LlmApiService
@@ -86,10 +93,21 @@ class DynamicBaseUrlInterceptor : Interceptor {
             }
             .build()
 
-        val newRequest = original.newBuilder()
+        var newRequest = original.newBuilder()
             .url(newUrl)
             .removeHeader(X_TARGET_BASE_URL)
             .build()
+
+        // ── noAuth: strip empty Authorization header ─────────────────────────
+        // Providers with noAuth=true have callers pass "" as the auth value.
+        // An empty/blank Authorization header must not be forwarded — many
+        // endpoints treat any Authorization header (even empty) as an auth
+        // attempt and reject the request before the body is read.
+        if (newRequest.header("Authorization").isNullOrBlank()) {
+            newRequest = newRequest.newBuilder()
+                .removeHeader("Authorization")
+                .build()
+        }
 
         return chain.proceed(newRequest)
     }

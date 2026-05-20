@@ -39,13 +39,15 @@ fun QuotaDashboardScreen(
     ) { innerPadding ->
         if (quotaList.isEmpty()) {
             Box(
-                modifier = Modifier.fillMaxSize().padding(innerPadding),
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     CircularProgressIndicator()
                     Spacer(Modifier.height(16.dp))
-                    Text("Loading quota data...")
+                    Text("Loading quota data…")
                 }
             }
         } else {
@@ -80,10 +82,12 @@ private fun QuotaCard(status: QuotaStatus) {
         elevation = CardDefaults.cardElevation(2.dp)
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
+
+            // ── Header ────────────────────────────────────────────────────────
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     if (status.isAvailable) Icons.Default.CheckCircle else Icons.Default.Block,
-                    null,
+                    contentDescription = null,
                     tint = if (status.isAvailable) BabuTeal else RauschRed,
                     modifier = Modifier.size(16.dp)
                 )
@@ -101,14 +105,65 @@ private fun QuotaCard(status: QuotaStatus) {
                 color = MaterialTheme.colorScheme.outline,
                 maxLines = 1
             )
+
             Spacer(Modifier.height(8.dp))
+
+            // ── Rate limit gauges ─────────────────────────────────────────────
             if (status.provider.rpmLimit < Int.MAX_VALUE) {
                 RateLimitGauge("RPM", status.rpmUsed, status.provider.rpmLimit)
                 Spacer(Modifier.height(4.dp))
             }
             if (status.provider.rpdLimit < Int.MAX_VALUE) {
                 RateLimitGauge("RPD", status.rpdUsed, status.provider.rpdLimit)
+                Spacer(Modifier.height(4.dp))
+            }
+
+            // ── Daily activity summary ────────────────────────────────────────
+            if (status.totalRequestsToday > 0 || status.totalTokensToday > 0L) {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    StatPill(
+                        label = "Reqs",
+                        value = status.totalRequestsToday.toString()
+                    )
+                    StatPill(
+                        label = "Tokens",
+                        value = formatTokenCount(status.totalTokensToday)
+                    )
+                }
+            } else {
+                Text(
+                    "Keine Requests heute",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.outline
+                )
             }
         }
     }
+}
+
+@Composable
+private fun StatPill(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(
+            value,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = BabuTeal
+        )
+        Text(
+            label,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.outline
+        )
+    }
+}
+
+private fun formatTokenCount(count: Long): String = when {
+    count >= 1_000_000L -> "%.1fM".format(count / 1_000_000.0)
+    count >= 1_000L     -> "%.1fK".format(count / 1_000.0)
+    else                -> count.toString()
 }
