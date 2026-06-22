@@ -5,6 +5,7 @@ import com.anvil.bellows.data.local.db.dao.ProviderConfigDao
 import com.anvil.bellows.data.local.db.dao.RequestLogDao
 import com.anvil.bellows.data.local.db.entity.ProviderConfigEntity
 import com.anvil.bellows.data.remote.provider.Specialty
+import kotlinx.coroutines.sync.Semaphore
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -14,6 +15,11 @@ class RateLimitTracker @Inject constructor(
     private val providerConfigDao: ProviderConfigDao,
     private val modelConfigDao: ModelConfigDao
 ) {
+    // z.ai erlaubt nur EINE gleichzeitige Anfrage pro Key → serialisieren,
+    // damit parallele Coroutines nicht in Concurrency-/429-Fehler laufen.
+    private val zaiSemaphore = Semaphore(permits = 1)
+    fun getZaiSemaphore(): Semaphore = zaiSemaphore
+
     suspend fun canUse(provider: ProviderConfigEntity): Boolean {
         if (!provider.enabled) return false
 

@@ -45,7 +45,7 @@ fun MemoryScreen(
     }
 
     // Per-group expand state (all collapsed by default)
-    val expandedSessions = remember { mutableStateSetOf<String>() }
+    val expandedSessions = remember { mutableStateListOf<String>() }
 
     // Clear-session confirmation
     var clearTarget by remember { mutableStateOf<SessionMemoryGroup?>(null) }
@@ -158,7 +158,7 @@ fun MemoryScreen(
             text = {
                 Text(
                     "Alle ${target.chunks.size} Chunk${if (target.chunks.size == 1) "" else "s"} " +
-                            "der Session „${target.sessionTitle}" werden unwiderruflich gelöscht."
+                            "der Session „${target.sessionTitle}“ werden unwiderruflich gelöscht."
                 )
             },
             confirmButton = {
