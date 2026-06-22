@@ -47,6 +47,7 @@ class BellowsHttpServer @Inject constructor(
     private val rateLimitTracker: RateLimitTracker,
     private val llmRepository: LlmRepository,
     private val providerConfigDao: ProviderConfigDao,
+    private val localProxyGateway: LocalProxyGateway,
     private val gson: Gson
 ) : NanoHTTPD(PORT) {
 
@@ -120,6 +121,18 @@ class BellowsHttpServer @Inject constructor(
         val bodyStr = body["postData"]
             ?: return json(Response.Status.BAD_REQUEST,
                 """{"error":{"message":"Empty request body"}}""")
+
+        // ── Policy: lokalen LiteLLM-Proxy bevorzugen ────────────────────────────
+        // Wenn der Proxy (Termux, localhost:4000) läuft, reichen wir die Anfrage
+        // 1:1 durch (140+ Provider). Ein expliziter Provider-Hint erzwingt den
+        // nativen Router. Schlägt das Durchreichen fehl → Fallback auf nativ.
+        val forceNative = session.headers[HEADER_PROVIDER_HINT.lowercase()] != null
+        if (!forceNative && localProxyGateway.isAvailable()) {
+            localProxyGateway.forward("/v1/chat/completions", bodyStr)?.let {
+                Log.d(TAG, "Chat via lokalem LiteLLM-Proxy durchgereicht")
+                return it
+            }
+        }
 
         val req = runCatching { gson.fromJson(bodyStr, JsonObject::class.java) }.getOrNull()
             ?: return json(Response.Status.BAD_REQUEST,
@@ -200,6 +213,11 @@ class BellowsHttpServer @Inject constructor(
     // ── GET /v1/models ─────────────────────────────────────────────────────────
 
     private fun handleModels(): Response {
+        // Policy: Wenn der lokale LiteLLM-Proxy läuft, dessen (breite) Modellliste
+        // durchreichen; sonst die nativen Provider-Modelle auflisten.
+        if (localProxyGateway.isAvailable()) {
+            localProxyGateway.forward("/v1/models", null)?.let { return it }
+        }
         val providers = runBlocking { providerConfigDao.getEnabledProviders() }
         val arr = JsonArray()
         providers.forEach { p ->
