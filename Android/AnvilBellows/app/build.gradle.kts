@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -126,6 +127,12 @@ dependencies {
 
     // NanoHTTPD (local OpenAI-compatible API server)
     implementation(libs.nanohttpd)
+
+    // Chrome Custom Tabs (API-Key-Wizard: Provider-Console im Browser öffnen)
+    implementation(libs.androidx.browser)
+
+    // kotlinx.serialization (Provider-Konfig Im-/Export)
+    implementation(libs.kotlinx.serialization.json)
 
     // Test
     testImplementation(libs.junit)
