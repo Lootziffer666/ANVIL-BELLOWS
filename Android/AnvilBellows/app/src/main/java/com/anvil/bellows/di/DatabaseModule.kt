@@ -24,6 +24,13 @@ object DatabaseModule {
                 AppDatabase.MIGRATION_2_3,
                 AppDatabase.MIGRATION_3_4   // DB v4: 7 new provider config fields
             )
+            // fallbackToDestructiveMigration() bleibt als letztes Sicherheitsnetz,
+            // damit die App bei einer unerwarteten Schema-Diskrepanz nie "bricked".
+            // Datensicherheit ist trotzdem gewährleistet: ProviderBackupManager hält
+            // einen verschlüsselten Snapshot der Provider-/Modell-Konfiguration vor,
+            // den DatabaseInitializer nach einem Wipe automatisch wiederherstellt.
+            // Die API-Keys selbst liegen in EncryptedPrefs und überleben einen
+            // DB-Wipe ohnehin (gleiche apiKeyAlias-IDs) — keine verlorenen Keys mehr.
             .fallbackToDestructiveMigration()
             .build()
 
