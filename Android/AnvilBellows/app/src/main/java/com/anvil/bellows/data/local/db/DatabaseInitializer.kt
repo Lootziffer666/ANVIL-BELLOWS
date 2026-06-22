@@ -20,19 +20,39 @@ class DatabaseInitializer @Inject constructor(
     private val providerConfigDao: ProviderConfigDao,
     private val modelConfigDao: ModelConfigDao,
     private val agentPresetDao: AgentPresetDao,
-    private val encryptedPrefs: EncryptedPrefsManager
+    private val encryptedPrefs: EncryptedPrefsManager,
+    private val backup: ProviderBackupManager
 ) {
     private val _ready = CompletableDeferred<Unit>()
     val ready: Deferred<Unit> = _ready
 
     suspend fun initializeIfNeeded() = withContext(Dispatchers.IO) {
-        if (!encryptedPrefs.isFirstLaunch()) {
+        val firstLaunch = encryptedPrefs.isFirstLaunch()
+        val providerCount = providerConfigDao.count()
+
+        // Normalfall: nichts zu tun.
+        if (!firstLaunch && providerCount > 0) {
             _ready.complete(Unit)
             return@withContext
         }
-        seedProviders()
+
+        // Provider-Zeilen fehlen (Erststart ODER nach destruktiver Migration):
+        //  1) Aus verschlüsseltem Snapshot wiederherstellen (eigene Provider/Edits),
+        //  2) sonst Default-Provider neu seeden.
+        // Die API-Keys in den EncryptedPrefs überleben in beiden Fällen und passen
+        // automatisch wieder (gleiche apiKeyAlias-IDs) — keine verlorenen Keys mehr.
+        if (providerCount == 0) {
+            val restored = backup.restoreFromSnapshot()
+            if (!restored) {
+                seedProviders()
+            }
+        }
+
+        // Eingebaute Presets nur anlegen, wenn keine vorhanden sind (self-guarded).
         seedBuiltInPresets()
+
         encryptedPrefs.markFirstLaunchDone()
+        backup.refreshSnapshot()   // direkt nach Wiederherstellung/Seed sichern
         _ready.complete(Unit)
     }
 

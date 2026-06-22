@@ -30,7 +30,15 @@ class EncryptedPrefsManager @Inject constructor(
 
     // ── Provider API keys ──────────────────────────────────────────────────────
 
+    /**
+     * Speichert einen API-Key.
+     *
+     * DATENSICHERHEIT: Ein leerer Wert überschreibt NIE einen vorhandenen Key.
+     * (Früher konnte ein leeres Speichern bestehende Keys löschen.) Zum
+     * gezielten Löschen [removeApiKey] verwenden.
+     */
     fun storeApiKey(providerId: String, apiKey: String) {
+        if (apiKey.isBlank()) return  // niemals mit Leerwert überschreiben
         prefs.edit().putString("api_key_$providerId", apiKey).apply()
     }
 
@@ -40,6 +48,21 @@ class EncryptedPrefsManager @Inject constructor(
     fun removeApiKey(providerId: String) {
         prefs.edit().remove("api_key_$providerId").apply()
     }
+
+    /** IDs aller Provider, für die ein Key hinterlegt ist (für Backup/Recovery). */
+    fun apiKeyProviderIds(): Set<String> =
+        prefs.all.keys
+            .filter { it.startsWith("api_key_") }
+            .map { it.removePrefix("api_key_") }
+            .toSet()
+
+    /** Verschlüsselter Snapshot der Provider-Konfiguration (Recovery nach DB-Wipe). */
+    fun storeProviderSnapshot(json: String) {
+        prefs.edit().putString("provider_snapshot", json).apply()
+    }
+
+    fun getProviderSnapshot(): String? =
+        prefs.getString("provider_snapshot", null)
 
     // ── Vertex AI Service Account JSON ─────────────────────────────────────────
 
