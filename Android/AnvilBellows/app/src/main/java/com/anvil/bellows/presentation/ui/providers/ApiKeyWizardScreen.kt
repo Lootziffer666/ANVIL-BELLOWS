@@ -167,7 +167,7 @@ fun ApiKeyWizardScreen(
             } else {
                 // ── Standard API key flow ─────────────────────────────────────
                 Text(
-                    "Tippe auf „Console öffnen", melde dich an und kopiere deinen API-Key. " +
+                    "Tippe auf „Console öffnen“, melde dich an und kopiere deinen API-Key. " +
                     "Bellows erkennt den Key automatisch und speichert ihn, sobald du zurückkehrst.",
                     style = MaterialTheme.typography.bodyMedium
                 )
