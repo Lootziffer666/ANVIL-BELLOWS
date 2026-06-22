@@ -1,13 +1,25 @@
-name: Build Debug APK
+name: Android CI
 
+# Compile- und QA-Gate fuer die Android-App.
+# Laeuft auf PRs UND auf main, damit Kotlin-Aenderungen VOR dem Merge
+# kompiliert und getestet werden (CI = Compiler + QA-Runner; lokale
+# Sandbox hat kein Android SDK).
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:    # Manual trigger from GitHub Actions tab
+  pull_request:
+  workflow_dispatch:    # Manueller Trigger aus dem Actions-Tab
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  build:
-    name: Assemble debug APK
+  build-test:
+    name: Compile + Unit-Tests + APK
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
@@ -25,13 +37,37 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x Android/AnvilBellows/gradlew
 
+      # QA zuerst: schnelle JVM-Unit-Tests (RateLimitTracker, Interceptor, ...).
+      - name: Unit tests (QA)
+        working-directory: Android/AnvilBellows
+        run: ./gradlew testDebugUnitTest --stacktrace
+
+      # Lint surfacen, aber den Build nicht hart blockieren (bestehende Warnungen).
+      - name: Android Lint (non-blocking)
+        working-directory: Android/AnvilBellows
+        continue-on-error: true
+        run: ./gradlew lintDebug --stacktrace
+
       - name: Build debug APK
         working-directory: Android/AnvilBellows
         run: ./gradlew assembleDebug --stacktrace
 
       - name: Upload APK artifact
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: anvil-bellows-debug
           path: Android/AnvilBellows/app/build/outputs/apk/debug/app-debug.apk
           retention-days: 14
+
+      # Test-/Lint-Reports immer hochladen (auch bei Fehlschlag) zur Diagnose.
+      - name: Upload test & lint reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: anvil-bellows-reports
+          path: |
+            Android/AnvilBellows/app/build/reports/tests/**
+            Android/AnvilBellows/app/build/reports/lint-results-*.html
+          retention-days: 14
+          if-no-files-found: ignore
