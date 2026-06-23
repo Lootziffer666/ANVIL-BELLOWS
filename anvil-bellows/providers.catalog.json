@@ -1,0 +1,244 @@
+{
+  "_comment": "Kuratierter Free-LLM-Provider-Katalog für ANVIL-BELLOWS. Quellen: awesome-free-llm-apis + free-coding-models (geerntet, dedupliziert). KEINE Preisdaten (unzuverlässig). Felder: id, name, base_url, auth(none|api_key), env_key, litellm_prefix(nativer Prefix ODER 'openai' für generisch OpenAI-kompatible Endpunkte), free, limits(Startwert-Hinweis, der echte Wert wird zur Laufzeit gelernt), models. Der Generator erzeugt daraus eine LiteLLM model_list; Keys NUR via os.environ.",
+  "version": "1.0.0",
+  "providers": [
+    {
+      "id": "pollinations",
+      "name": "Pollinations (key-frei)",
+      "country": "DE",
+      "base_url": "https://text.pollinations.ai/openai",
+      "auth": "none",
+      "env_key": "POLLINATIONS_API_KEY",
+      "litellm_prefix": "openai",
+      "free": true,
+      "limits": "key-frei, Best-Effort",
+      "models": [
+        "openai",
+        "mistral"
+      ]
+    },
+    {
+      "id": "ovhcloud",
+      "name": "OVHcloud AI Endpoints",
+      "country": "FR",
+      "base_url": "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1",
+      "auth": "none",
+      "env_key": "OVH_API_KEY",
+      "litellm_prefix": "openai",
+      "free": true,
+      "limits": "2 RPM/IP (anonym). HINWEIS: via LiteLLM (sendet Dummy-Bearer) lehnt OVH den Anonym-Zugang mit 403 ab -> für zuverlässige Nutzung OVH_API_KEY setzen.",
+      "models": [
+        "Meta-Llama-3_3-70B-Instruct",
+        "Qwen3-32B",
+        "Qwen3-Coder-30B-A3B-Instruct",
+        "Mistral-Small-3.2-24B-Instruct",
+        "gpt-oss-120b",
+        "gpt-oss-20b",
+        "Qwen2.5-VL-72B-Instruct"
+      ]
+    },
+    {
+      "id": "sambanova",
+      "name": "SambaNova",
+      "country": "US",
+      "base_url": "https://api.sambanova.ai/v1",
+      "auth": "api_key",
+      "env_key": "SAMBANOVA_API_KEY",
+      "litellm_prefix": "sambanova",
+      "free": true,
+      "limits": "20 RPM, 200K TPD",
+      "models": [
+        "Meta-Llama-3.3-70B-Instruct",
+        "DeepSeek-V3.1",
+        "gpt-oss-120b"
+      ]
+    },
+    {
+      "id": "cloudflare",
+      "name": "Cloudflare Workers AI",
+      "country": "US",
+      "base_url": "https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/v1",
+      "auth": "api_key",
+      "env_key": "CLOUDFLARE_API_KEY",
+      "extra_env": ["CLOUDFLARE_ACCOUNT_ID"],
+      "litellm_prefix": "cloudflare",
+      "free": true,
+      "limits": "10.000 Neurons/Tag",
+      "models": [
+        "@cf/meta/llama-3.3-70b-instruct-fp8-fast",
+        "@cf/openai/gpt-oss-120b",
+        "@cf/mistralai/mistral-small-3.1-24b-instruct"
+      ]
+    },
+    {
+      "id": "scaleway",
+      "name": "Scaleway Generative APIs",
+      "country": "FR",
+      "base_url": "https://api.scaleway.ai/v1",
+      "auth": "api_key",
+      "env_key": "SCALEWAY_API_KEY",
+      "litellm_prefix": "openai",
+      "free": true,
+      "limits": "Free Tier, EU-Hosting",
+      "models": [
+        "llama-3.3-70b-instruct",
+        "qwen2.5-coder-32b-instruct",
+        "mistral-small-3.2-24b-instruct-2506"
+      ]
+    },
+    {
+      "id": "dashscope",
+      "name": "Alibaba DashScope (Qwen)",
+      "country": "CN",
+      "base_url": "https://dashscope-intl.aliyuncs.com/compatible-mode/v1",
+      "auth": "api_key",
+      "env_key": "DASHSCOPE_API_KEY",
+      "litellm_prefix": "openai",
+      "free": true,
+      "limits": "Free Quota (Model Studio)",
+      "models": [
+        "qwen-max",
+        "qwen-plus",
+        "qwen2.5-coder-32b-instruct"
+      ]
+    },
+    {
+      "id": "novita",
+      "name": "Novita AI",
+      "country": "US",
+      "base_url": "https://api.novita.ai/openai/v1",
+      "auth": "api_key",
+      "env_key": "NOVITA_API_KEY",
+      "litellm_prefix": "openai",
+      "free": true,
+      "limits": "Free Credits",
+      "models": [
+        "meta-llama/llama-3.3-70b-instruct",
+        "deepseek/deepseek-v3"
+      ]
+    },
+    {
+      "id": "routeway",
+      "name": "Routeway",
+      "country": "US",
+      "base_url": "https://api.routeway.ai/v1",
+      "auth": "api_key",
+      "env_key": "ROUTEWAY_API_KEY",
+      "litellm_prefix": "openai",
+      "free": true,
+      "limits": "Free Models",
+      "models": [
+        "llama-3.3-70b-instruct",
+        "deepseek-r1"
+      ]
+    },
+    {
+      "id": "opencode-zen",
+      "name": "OpenCode Zen",
+      "country": "US",
+      "base_url": "https://opencode.ai/zen/v1",
+      "auth": "api_key",
+      "env_key": "OPENCODE_API_KEY",
+      "litellm_prefix": "openai",
+      "free": true,
+      "limits": "Free Coding-Modelle",
+      "models": [
+        "qwen3-coder",
+        "kimi-k2"
+      ]
+    },
+    {
+      "id": "aionlabs",
+      "name": "Aion Labs",
+      "country": "IL",
+      "base_url": "https://api.aionlabs.ai/v1",
+      "auth": "api_key",
+      "env_key": "AIONLABS_API_KEY",
+      "litellm_prefix": "openai",
+      "free": true,
+      "limits": "15 RPM, 20K TPD (Roleplay/Story)",
+      "models": [
+        "aion-2.5",
+        "aion-rp-1.0-8b"
+      ]
+    },
+    {
+      "id": "modelscope",
+      "name": "ModelScope",
+      "country": "CN",
+      "base_url": "https://api-inference.modelscope.cn/v1",
+      "auth": "api_key",
+      "env_key": "MODELSCOPE_API_KEY",
+      "litellm_prefix": "openai",
+      "free": true,
+      "limits": "2.000 RPD gesamt (Alibaba-Bindung)",
+      "models": [
+        "Qwen/Qwen3-32B",
+        "deepseek-ai/DeepSeek-V3"
+      ]
+    },
+
+    {
+      "id": "groq",
+      "name": "Groq",
+      "country": "US",
+      "base_url": "https://api.groq.com/openai/v1",
+      "auth": "api_key",
+      "env_key": "GROQ_API_KEY",
+      "litellm_prefix": "groq",
+      "free": true,
+      "limits": "14.400 req/Tag (free)",
+      "models": [
+        "llama-3.3-70b-versatile",
+        "llama-3.1-8b-instant",
+        "deepseek-r1-distill-llama-70b"
+      ]
+    },
+    {
+      "id": "openrouter",
+      "name": "OpenRouter (:free)",
+      "country": "US",
+      "base_url": "https://openrouter.ai/api/v1",
+      "auth": "api_key",
+      "env_key": "OPENROUTER_API_KEY",
+      "litellm_prefix": "openrouter",
+      "free": true,
+      "limits": "abhängig vom :free-Modell",
+      "models": [
+        "meta-llama/llama-3.3-70b-instruct:free",
+        "deepseek/deepseek-r1:free",
+        "qwen/qwq-32b:free"
+      ]
+    },
+    {
+      "id": "gemini",
+      "name": "Google AI Studio (Gemini)",
+      "country": "US",
+      "base_url": "https://generativelanguage.googleapis.com/v1beta",
+      "auth": "api_key",
+      "env_key": "GEMINI_API_KEY",
+      "litellm_prefix": "gemini",
+      "free": true,
+      "limits": "Gemini 2.x Flash free quota",
+      "models": [
+        "gemini-2.0-flash",
+        "gemini-2.5-flash"
+      ]
+    },
+    {
+      "id": "cerebras",
+      "name": "Cerebras",
+      "country": "US",
+      "base_url": "https://api.cerebras.ai/v1",
+      "auth": "api_key",
+      "env_key": "CEREBRAS_API_KEY",
+      "litellm_prefix": "cerebras",
+      "free": true,
+      "limits": "ultraschnell (~2000 t/s)",
+      "models": [
+        "llama-3.3-70b",
+        "qwen-3-32b"
+      ]
+    }
+  ]
+}
