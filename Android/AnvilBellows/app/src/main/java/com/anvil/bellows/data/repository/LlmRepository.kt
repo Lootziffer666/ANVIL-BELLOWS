@@ -4,7 +4,10 @@ import com.anvil.bellows.data.local.db.entity.ProviderConfigEntity
 import com.anvil.bellows.data.local.prefs.EncryptedPrefsManager
 import com.anvil.bellows.data.remote.api.LlmApiService
 import com.anvil.bellows.data.remote.dto.ChatRequest
+import com.anvil.bellows.data.remote.dto.ImageUrlDto
+import com.anvil.bellows.data.remote.dto.MessageContentPartDto
 import com.anvil.bellows.data.remote.dto.MessageDto
+import com.anvil.bellows.domain.model.ChatContentPart
 import com.anvil.bellows.domain.model.ChatMessage
 import com.anvil.bellows.util.RateLimitTracker
 import com.anvil.bellows.util.SseStreamParser
@@ -42,7 +45,7 @@ class LlmRepository @Inject constructor(
 
         val request = ChatRequest(
             model = provider.selectedModel,
-            messages = messages.map { MessageDto(it.role, it.content) },
+            messages = messages.map { it.toMessageDto() },
             stream = true,
             maxTokens = provider.maxOutput.coerceAtMost(8192)
         )
@@ -73,6 +76,32 @@ class LlmRepository @Inject constructor(
     // but the LlmApiService always sends the value as "Authorization". Providers
     // that deviate from standard Bearer auth should instead use a custom
     // authHeaderName configured in ProviderRegistry and respected by the server.
+    private fun ChatMessage.toMessageDto(): MessageDto {
+        val parts = contentParts
+        return MessageDto(
+            role = role,
+            content = if (parts.isNullOrEmpty()) {
+                content
+            } else {
+                parts.map { part ->
+                    when (part) {
+                        is ChatContentPart.Text -> MessageContentPartDto(
+                            type = "text",
+                            text = part.text
+                        )
+                        is ChatContentPart.ImageUrl -> MessageContentPartDto(
+                            type = "image_url",
+                            imageUrl = ImageUrlDto(
+                                url = part.imageUrl.url,
+                                detail = part.imageUrl.detail
+                            )
+                        )
+                    }
+                }
+            }
+        )
+    }
+
     private fun buildAuthHeader(provider: ProviderConfigEntity, apiKey: String): String =
         when (provider.authType) {
             "VERTEX"  -> "Bearer $apiKey"

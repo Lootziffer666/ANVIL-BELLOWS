@@ -4,6 +4,8 @@ import android.util.Log
 import com.anvil.bellows.data.local.db.dao.ProviderConfigDao
 import com.anvil.bellows.data.local.prefs.EncryptedPrefsManager
 import com.anvil.bellows.data.repository.LlmRepository
+import com.anvil.bellows.domain.model.ChatContentPart
+import com.anvil.bellows.domain.model.ChatImageUrl
 import com.anvil.bellows.domain.model.ChatMessage
 import com.anvil.bellows.util.RateLimitTracker
 import com.google.gson.Gson
@@ -242,13 +244,46 @@ class BellowsHttpServer @Inject constructor(
         val arr = req.getAsJsonArray("messages") ?: return emptyList()
         return arr.mapIndexed { i, el ->
             val obj = el.asJsonObject
+            val contentElement = obj.get("content")
+            val contentParts = parseContentParts(contentElement)
             ChatMessage(
-                id      = "msg_$i",
-                role    = obj.get("role")?.asString ?: "user",
-                content = obj.get("content")?.asString ?: ""
+                id = "msg_$i",
+                role = obj.get("role")?.asString ?: "user",
+                content = contentParts?.toPlainText() ?: contentElement?.takeIf { it.isJsonPrimitive && !it.isJsonNull }?.asString.orEmpty(),
+                contentParts = contentParts
             )
         }
     }
+
+    private fun parseContentParts(contentElement: com.google.gson.JsonElement?): List<ChatContentPart>? {
+        if (contentElement == null || !contentElement.isJsonArray) return null
+        return contentElement.asJsonArray.mapNotNull { partElement ->
+            val part = partElement.takeIf { it.isJsonObject }?.asJsonObject ?: return@mapNotNull null
+            when (part.stringOrNull("type")) {
+                "text" -> ChatContentPart.Text(part.stringOrNull("text").orEmpty())
+                "image_url" -> {
+                    val image = part.getAsJsonObject("image_url") ?: return@mapNotNull null
+                    ChatContentPart.ImageUrl(
+                        ChatImageUrl(
+                            url = image.stringOrNull("url").orEmpty(),
+                            detail = image.stringOrNull("detail")
+                        )
+                    )
+                }
+                else -> null
+            }
+        }.takeIf { it.isNotEmpty() }
+    }
+
+    private fun JsonObject.stringOrNull(memberName: String): String? =
+        get(memberName)?.takeIf { it.isJsonPrimitive && !it.isJsonNull }?.asString
+
+    private fun List<ChatContentPart>.toPlainText(): String = mapNotNull { part ->
+        when (part) {
+            is ChatContentPart.Text -> part.text
+            is ChatContentPart.ImageUrl -> null
+        }
+    }.joinToString("\n")
 
     private fun escapeJson(s: String): String = s
         .replace("\\", "\\\\")

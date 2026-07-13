@@ -8,6 +8,7 @@ The project now includes dedicated Windows scripts for dependency installation a
 
 ## Recently Completed
 
+- [x] Added multimodal chat message contracts for OpenAI-compatible vision content parts while preserving text-only payloads.
 - [x] Added Windows environment template file: `anvil-bellows/.env.template`
 - [x] Added Windows setup script: `anvil-bellows/setup_windows.ps1`
 - [x] Added Windows run script: `anvil-bellows/run_proxy_windows.ps1`

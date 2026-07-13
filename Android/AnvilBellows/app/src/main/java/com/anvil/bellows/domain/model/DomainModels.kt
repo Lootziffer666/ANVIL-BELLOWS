@@ -3,11 +3,34 @@ package com.anvil.bellows.domain.model
 data class ChatMessage(
     val id: String,
     val role: String,
+    /**
+     * Plain-text projection of the message. This remains the canonical value for
+     * persistence, memory retrieval, token estimates, and providers that only
+     * accept text-only chat payloads.
+     */
     val content: String,
+    /**
+     * Optional multimodal payload for vision-capable models. When present, API
+     * adapters should serialize this as the OpenAI-compatible content-parts
+     * array instead of downgrading the request to plain text.
+     */
+    val contentParts: List<ChatContentPart>? = null,
     val timestamp: Long = System.currentTimeMillis(),
     val providerId: String? = null,
     val modelId: String? = null,
     val isHandoffBoundary: Boolean = false
+) {
+    fun hasVisionContent(): Boolean = contentParts.orEmpty().any { it is ChatContentPart.ImageUrl }
+}
+
+sealed class ChatContentPart {
+    data class Text(val text: String) : ChatContentPart()
+    data class ImageUrl(val imageUrl: ChatImageUrl) : ChatContentPart()
+}
+
+data class ChatImageUrl(
+    val url: String,
+    val detail: String? = null
 )
 
 data class Provider(
