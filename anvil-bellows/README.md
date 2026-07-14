@@ -1,5 +1,15 @@
 # Anvil-Bellows - V1.0 Infrastruktur & Kosten-Schild
 
+Eigenständiges Repo/Deployment, organisatorisch IIG-Infrastruktur — kein Teil des
+`ANVIL`-Kotlin-Monorepos, auch wenn beide "Bellows" heißen (Schmiede-Metapher, siehe
+`ANVIL/docs/ANVIL_CONCEPT_CONTRACT.md`, "Anvil × Anvil-Bellows"). `ANVIL` hat einen
+eigenen, Kotlin-nativen Router (`anvil-kmp/modules/bellows`, Port 8765) für seine eigene
+Modul-Orchestrierung — dieser Proxy hier kann darin einfach als ein weiterer
+OpenAI-kompatibler `ProviderAdapter` eingetragen werden (Rezept:
+`anvil-kmp/modules/bellows/README.md`, "Anvil-Bellows als Upstream-Provider"), statt
+Cloud-Credentials zweimal zu verwalten. Die beiden Implementierungen bleiben getrennte
+Prozesse, keine Konkurrenz.
+
 ## Docker (empfohlen für einen dauerhaft erreichbaren Gateway)
 
 Android-App und Windows-WebView-Client sind Clients/Konfigurationsoberflächen,
