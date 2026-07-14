@@ -1,5 +1,53 @@
 # Anvil-Bellows - V1.0 Infrastruktur & Kosten-Schild
 
+Eigenständiges Repo/Deployment, organisatorisch IIG-Infrastruktur — kein Teil des
+`ANVIL`-Kotlin-Monorepos, auch wenn beide "Bellows" heißen (Schmiede-Metapher, siehe
+`ANVIL/docs/ANVIL_CONCEPT_CONTRACT.md`, "Anvil × Anvil-Bellows"). `ANVIL` hat einen
+eigenen, Kotlin-nativen Router (`anvil-kmp/modules/bellows`, Port 8765) für seine eigene
+Modul-Orchestrierung — dieser Proxy hier kann darin einfach als ein weiterer
+OpenAI-kompatibler `ProviderAdapter` eingetragen werden (Rezept:
+`anvil-kmp/modules/bellows/README.md`, "Anvil-Bellows als Upstream-Provider"), statt
+Cloud-Credentials zweimal zu verwalten. Die beiden Implementierungen bleiben getrennte
+Prozesse, keine Konkurrenz.
+
+## Docker (empfohlen für einen dauerhaft erreichbaren Gateway)
+
+Android-App und Windows-WebView-Client sind Clients/Konfigurationsoberflächen,
+kein Server, der dauerhaft läuft. Für einen stabilen `BELLOWS_BASE_URL`, den
+andere Repos (DECOMPILE, SHADED, LAB, CUE-AGENT) zuverlässig ansprechen
+können, läuft der Proxy als eigener Container statt nur "solange ein Telefon
+oder PowerShell-Fenster offen ist":
+
+```bash
+cp .env.template .env
+# .env ausfüllen (GOOGLE_PROJECT_ID, GOOGLE_APPLICATION_CREDENTIALS als
+# ABSOLUTER Host-Pfad zur service-account.json, OPENROUTER_API_KEY,
+# LITELLM_MASTER_KEY)
+docker compose up -d --build
+```
+
+Danach ist der Proxy unter `http://<host>:4000/v1` erreichbar (OpenAI-
+kompatibel, `Authorization: Bearer <LITELLM_MASTER_KEY>`), persistiert über
+Neustarts (`restart: unless-stopped`) und cached lokal über einen benannten
+Volume. `docker-compose.yml` mountet die GCP-Credential-Datei read-only und
+überschreibt `GOOGLE_APPLICATION_CREDENTIALS` intern auf einen festen
+Container-Pfad — die `.env` bleibt dieselbe wie beim lokalen Lauf.
+
+**Bugfix (2026-07-13):** `config.yaml` verwendete durchgängig
+`"${VAR_NAME}"` (Bash/Compose-Stil) für Secrets/Parameter. LiteLLM löst
+Environment-Variablen aber ausschließlich über die eigene
+`os.environ/VAR_NAME`-Syntax auf (bereits korrekt verwendet in
+`config.generated.yaml`/`generate_config.py`) — mit der alten Syntax wurde
+z. B. `master_key` nie durch den echten Wert ersetzt, sondern blieb
+buchstäblich der String `${LITELLM_MASTER_KEY}`, wodurch **jede** Anfrage
+(auch mit korrektem Master-Key) mit `"No connected db."` fehlschlug, weil
+der Key nie als Master-Key erkannt wurde. Verifiziert: vor dem Fix schlug
+`/v1/chat/completions` mit korrektem Key fehl, nach dem Fix (16 Stellen in
+`config.yaml` auf `os.environ/...` umgestellt) funktioniert Auth und
+Modell-Listing wie dokumentiert. Betraf jede Laufzeitumgebung gleichermaßen
+(Docker, `run_proxy.sh`, `run_proxy_windows.ps1`) — keine Docker-spezifische
+Einschränkung.
+
 ## Quick Start (Windows, ohne WSL)
 
 > Alle Schritte in **PowerShell** ausführen.

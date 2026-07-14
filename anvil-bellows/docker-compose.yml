@@ -1,0 +1,24 @@
+# Runs the BELLOWS gateway as a persistent service. Usage:
+#   cp .env.template .env && fill in real values, then:
+#   docker compose up -d --build
+# Other repos (DECOMPILE, SHADED, LAB, CUE-AGENT) can then point
+# BELLOWS_BASE_URL at http://<this-host>:4000/v1.
+services:
+  bellows:
+    build: .
+    container_name: anvil-bellows
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    env_file:
+      - .env
+    environment:
+      # Overrides the host-side path from .env with the fixed in-container
+      # path the credentials file is actually mounted at below.
+      - GOOGLE_APPLICATION_CREDENTIALS=/secrets/gcp-credentials.json
+    volumes:
+      - ${GOOGLE_APPLICATION_CREDENTIALS}:/secrets/gcp-credentials.json:ro
+      - bellows-cache:/root/.cache
+
+volumes:
+  bellows-cache:

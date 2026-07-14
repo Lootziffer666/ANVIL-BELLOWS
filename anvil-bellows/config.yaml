@@ -16,8 +16,8 @@ model_list:
   - model_name: gpt-4o
     litellm_params:
       model: vertex_ai/gemini-1.5-pro-002
-      project: "${GOOGLE_PROJECT_ID}"
-      location: "${GOOGLE_LOCATION}"
+      project: "os.environ/GOOGLE_PROJECT_ID"
+      location: "os.environ/GOOGLE_LOCATION"
       # Vertex-specific: Enable context caching for repeated prompts
       vertex_kwargs:
         enable_raw_content: true
@@ -26,23 +26,23 @@ model_list:
   - model_name: gpt-4.5
     litellm_params:
       model: vertex_ai/gemini-2.0-flash
-      project: "${GOOGLE_PROJECT_ID}"
-      location: "${GOOGLE_LOCATION}"
+      project: "os.environ/GOOGLE_PROJECT_ID"
+      location: "os.environ/GOOGLE_LOCATION"
 
   # POLECAT: Gemini 1.5 Flash - Fast & cheap for quick tasks
   # Maps: gpt-4o-mini -> vertex_ai/gemini-1.5-flash
   - model_name: gpt-4o-mini
     litellm_params:
       model: vertex_ai/gemini-1.5-flash-002
-      project: "${GOOGLE_PROJECT_ID}"
-      location: "${GOOGLE_LOCATION}"
+      project: "os.environ/GOOGLE_PROJECT_ID"
+      location: "os.environ/GOOGLE_LOCATION"
 
   # POLECAT: Gemini 2.0 Flash (fastest)
   - model_name: gpt-4o-mini-2
     litellm_params:
       model: vertex_ai/gemini-2.0-flash-exp
-      project: "${GOOGLE_PROJECT_ID}"
-      location: "${GOOGLE_LOCATION}"
+      project: "os.environ/GOOGLE_PROJECT_ID"
+      location: "os.environ/GOOGLE_LOCATION"
 
   # ============================================================================
   # OPENROUTER FREE MODELS (Refinery)
@@ -52,7 +52,7 @@ model_list:
   - model_name: refinery
     litellm_params:
       model: openrouter/nomic-ai/mimo-v2-pro
-      api_key: "${OPENROUTER_API_KEY}"
+      api_key: "os.environ/OPENROUTER_API_KEY"
       # Free tier - no cost
       extra_body:
         mode: "code"
@@ -61,25 +61,25 @@ model_list:
   - model_name: refinery-deepseek
     litellm_params:
       model: openrouter/deepseek/deepseek-chat
-      api_key: "${OPENROUTER_API_KEY}"
+      api_key: "os.environ/OPENROUTER_API_KEY"
 
   # Free: Qwen 2.5 Coder - Code-specialized
   - model_name: qwen-coder
     litellm_params:
       model: openrouter/qwen/qwen-2.5-coder-32b-instruct
-      api_key: "${OPENROUTER_API_KEY}"
+      api_key: "os.environ/OPENROUTER_API_KEY"
 
   # Free: Phi-4 Mini - Microsoft lightweight
   - model_name: phi-mini
     litellm_params:
       model: openrouter/microsoft/phi-4-mini
-      api_key: "${OPENROUTER_API_KEY}"
+      api_key: "os.environ/OPENROUTER_API_KEY"
 
   # Free: Nous-Hermes - Open model
   - model_name: nous-hermes
     litellm_params:
       model: openrouter/nousresearch/nous-hermes-2-mistral-7b-dpo
-      api_key: "${OPENROUTER_API_KEY}"
+      api_key: "os.environ/OPENROUTER_API_KEY"
 
   # ============================================================================
   # ANTHROPIC COMPATIBLE (via OpenRouter - free tier available)
@@ -88,7 +88,7 @@ model_list:
   - model_name: claude-sonnet
     litellm_params:
       model: openrouter/anthropic/claude-3-sonnet
-      api_key: "${OPENROUTER_API_KEY}"
+      api_key: "os.environ/OPENROUTER_API_KEY"
 
   # ============================================================================
   # EXTENSIBILITY: ADD YOUR OWN MODELS BELOW
@@ -98,7 +98,7 @@ model_list:
   # - model_name: my-custom-model
   #   litellm_params:
   #     model: openai/custom-model-name
-  #     api_key: "${CUSTOM_API_KEY}"
+  #     api_key: "os.environ/CUSTOM_API_KEY"
   #
   # Example: Adding Ollama (local)
   # - model_name: ollama-llama3
@@ -111,7 +111,7 @@ model_list:
 # ============================================================================
 
 general_settings:
-  master_key: "${LITELLM_MASTER_KEY}"  # Change this to your secure key
+  master_key: "os.environ/LITELLM_MASTER_KEY"  # Change this to your secure key
   # UI: http://localhost:4000/ui
   # API: http://localhost:4000/v1
 
