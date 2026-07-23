@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -79,6 +80,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
+    // IIG Typography — Google Fonts downloadable (Libre Baskerville, DM Sans, JetBrains Mono)
+    implementation(libs.androidx.ui.text.google.fonts)
     debugImplementation(libs.androidx.ui.tooling)
 
     // Navigation
@@ -124,6 +127,12 @@ dependencies {
 
     // NanoHTTPD (local OpenAI-compatible API server)
     implementation(libs.nanohttpd)
+
+    // Chrome Custom Tabs (API-Key-Wizard: Provider-Console im Browser öffnen)
+    implementation(libs.androidx.browser)
+
+    // kotlinx.serialization (Provider-Konfig Im-/Export)
+    implementation(libs.kotlinx.serialization.json)
 
     // Test
     testImplementation(libs.junit)

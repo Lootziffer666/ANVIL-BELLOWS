@@ -54,6 +54,10 @@ class DynamicBaseUrlInterceptor : Interceptor {
         const val X_TARGET_BASE_URL = "X-Target-Base-Url"
     }
 
+    companion object {
+        const val X_TARGET_BASE_URL = "X-Target-Base-Url"
+    }
+
     override fun intercept(chain: Interceptor.Chain): Response {
         val original = chain.request()
         val targetBase = original.header(X_TARGET_BASE_URL)

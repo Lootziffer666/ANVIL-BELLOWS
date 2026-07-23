@@ -4,6 +4,8 @@ import android.util.Log
 import com.anvil.bellows.data.local.db.dao.ProviderConfigDao
 import com.anvil.bellows.data.local.prefs.EncryptedPrefsManager
 import com.anvil.bellows.data.repository.LlmRepository
+import com.anvil.bellows.domain.model.ChatContentPart
+import com.anvil.bellows.domain.model.ChatImageUrl
 import com.anvil.bellows.domain.model.ChatMessage
 import com.anvil.bellows.util.RateLimitTracker
 import com.google.gson.Gson
@@ -47,6 +49,7 @@ class BellowsHttpServer @Inject constructor(
     private val rateLimitTracker: RateLimitTracker,
     private val llmRepository: LlmRepository,
     private val providerConfigDao: ProviderConfigDao,
+    private val localProxyGateway: LocalProxyGateway,
     private val gson: Gson
 ) : NanoHTTPD(PORT) {
 
@@ -120,6 +123,18 @@ class BellowsHttpServer @Inject constructor(
         val bodyStr = body["postData"]
             ?: return json(Response.Status.BAD_REQUEST,
                 """{"error":{"message":"Empty request body"}}""")
+
+        // ── Policy: lokalen LiteLLM-Proxy bevorzugen ────────────────────────────
+        // Wenn der Proxy (Termux, localhost:4000) läuft, reichen wir die Anfrage
+        // 1:1 durch (140+ Provider). Ein expliziter Provider-Hint erzwingt den
+        // nativen Router. Schlägt das Durchreichen fehl → Fallback auf nativ.
+        val forceNative = session.headers[HEADER_PROVIDER_HINT.lowercase()] != null
+        if (!forceNative && localProxyGateway.isAvailable()) {
+            localProxyGateway.forward("/v1/chat/completions", bodyStr)?.let {
+                Log.d(TAG, "Chat via lokalem LiteLLM-Proxy durchgereicht")
+                return it
+            }
+        }
 
         val req = runCatching { gson.fromJson(bodyStr, JsonObject::class.java) }.getOrNull()
             ?: return json(Response.Status.BAD_REQUEST,
@@ -200,6 +215,11 @@ class BellowsHttpServer @Inject constructor(
     // ── GET /v1/models ─────────────────────────────────────────────────────────
 
     private fun handleModels(): Response {
+        // Policy: Wenn der lokale LiteLLM-Proxy läuft, dessen (breite) Modellliste
+        // durchreichen; sonst die nativen Provider-Modelle auflisten.
+        if (localProxyGateway.isAvailable()) {
+            localProxyGateway.forward("/v1/models", null)?.let { return it }
+        }
         val providers = runBlocking { providerConfigDao.getEnabledProviders() }
         val arr = JsonArray()
         providers.forEach { p ->
@@ -224,13 +244,46 @@ class BellowsHttpServer @Inject constructor(
         val arr = req.getAsJsonArray("messages") ?: return emptyList()
         return arr.mapIndexed { i, el ->
             val obj = el.asJsonObject
+            val contentElement = obj.get("content")
+            val contentParts = parseContentParts(contentElement)
             ChatMessage(
-                id      = "msg_$i",
-                role    = obj.get("role")?.asString ?: "user",
-                content = obj.get("content")?.asString ?: ""
+                id = "msg_$i",
+                role = obj.get("role")?.asString ?: "user",
+                content = contentParts?.toPlainText() ?: contentElement?.takeIf { it.isJsonPrimitive && !it.isJsonNull }?.asString.orEmpty(),
+                contentParts = contentParts
             )
         }
     }
+
+    private fun parseContentParts(contentElement: com.google.gson.JsonElement?): List<ChatContentPart>? {
+        if (contentElement == null || !contentElement.isJsonArray) return null
+        return contentElement.asJsonArray.mapNotNull { partElement ->
+            val part = partElement.takeIf { it.isJsonObject }?.asJsonObject ?: return@mapNotNull null
+            when (part.stringOrNull("type")) {
+                "text" -> ChatContentPart.Text(part.stringOrNull("text").orEmpty())
+                "image_url" -> {
+                    val image = part.getAsJsonObject("image_url") ?: return@mapNotNull null
+                    ChatContentPart.ImageUrl(
+                        ChatImageUrl(
+                            url = image.stringOrNull("url").orEmpty(),
+                            detail = image.stringOrNull("detail")
+                        )
+                    )
+                }
+                else -> null
+            }
+        }.takeIf { it.isNotEmpty() }
+    }
+
+    private fun JsonObject.stringOrNull(memberName: String): String? =
+        get(memberName)?.takeIf { it.isJsonPrimitive && !it.isJsonNull }?.asString
+
+    private fun List<ChatContentPart>.toPlainText(): String = mapNotNull { part ->
+        when (part) {
+            is ChatContentPart.Text -> part.text
+            is ChatContentPart.ImageUrl -> null
+        }
+    }.joinToString("\n")
 
     private fun escapeJson(s: String): String = s
         .replace("\\", "\\\\")
@@ -243,8 +296,19 @@ class BellowsHttpServer @Inject constructor(
         """{"id":"$id","object":"chat.completion.chunk","created":$created,"model":"${escapeJson(model)}","choices":[{"index":0,"delta":{"content":"${escapeJson(content)}"},"finish_reason":null}]}"""
 
     private fun buildCompletionResponse(id: String, created: Long, model: String, content: String): String {
-        val tokens = (content.length / 4).coerceAtLeast(1)
+        val tokens = estimateTokens(content)
         return """{"id":"$id","object":"chat.completion","created":$created,"model":"${escapeJson(model)}","choices":[{"index":0,"message":{"role":"assistant","content":"${escapeJson(content)}"},"finish_reason":"stop"}],"usage":{"prompt_tokens":0,"completion_tokens":$tokens,"total_tokens":$tokens}}"""
+    }
+
+    /**
+     * Word-count–based token estimator consistent with [ConversationRepository].
+     * Each whitespace-delimited word ≈ 1 token; each punctuation character ≈ 0.5 tokens.
+     */
+    private fun estimateTokens(text: String): Int {
+        if (text.isBlank()) return 1
+        val words       = text.trim().split(Regex("\\s+")).size
+        val punctuation = text.count { !it.isLetterOrDigit() && !it.isWhitespace() }
+        return (words + punctuation / 2).coerceAtLeast(1)
     }
 
     private fun json(status: Response.Status, body: String): Response =

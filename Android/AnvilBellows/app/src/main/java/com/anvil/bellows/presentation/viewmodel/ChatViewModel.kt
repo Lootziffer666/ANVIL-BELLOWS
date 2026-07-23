@@ -115,6 +115,31 @@ class ChatViewModel @Inject constructor(
         }
     }
 
+    /** Resume an existing chat session, loading its message history from the database. */
+    fun loadSession(sessionId: String) {
+        viewModelScope.launch {
+            val session = conversationRepository.getSession(sessionId) ?: return@launch
+            val messages = conversationRepository.getMessages(sessionId)
+            activeSessionId = sessionId
+            _uiState.update {
+                it.copy(
+                    messages = messages,
+                    streamingText = "",
+                    isStreaming = false,
+                    error = null,
+                    sessionId = sessionId,
+                    selectedProviderId = session.currentProviderId,
+                    selectedProviderName = it.availableProviders
+                        .find { p -> p.id == session.currentProviderId }?.name
+                        ?: session.currentProviderId,
+                    handoffToast = null,
+                    activePresetId = null,
+                    activePresetName = null
+                )
+            }
+        }
+    }
+
     fun onInputChanged(text: String) {
         _uiState.update { it.copy(inputText = text) }
     }

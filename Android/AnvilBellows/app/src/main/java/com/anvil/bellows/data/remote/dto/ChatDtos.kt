@@ -4,7 +4,22 @@ import com.google.gson.annotations.SerializedName
 
 data class MessageDto(
     val role: String,
-    val content: String
+    /**
+     * OpenAI-compatible message content. Text-only messages are serialized as a
+     * String; vision messages are serialized as a List<MessageContentPartDto>.
+     */
+    val content: Any
+)
+
+data class MessageContentPartDto(
+    val type: String,
+    val text: String? = null,
+    @SerializedName("image_url") val imageUrl: ImageUrlDto? = null
+)
+
+data class ImageUrlDto(
+    val url: String,
+    val detail: String? = null
 )
 
 data class ChatRequest(

@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- IIG Charcoal Room canvas (dark mode) — matches CharcoalCanvas in Color.kt -->
+    <color name="iig_canvas">#1A1D21</color>
+</resources>

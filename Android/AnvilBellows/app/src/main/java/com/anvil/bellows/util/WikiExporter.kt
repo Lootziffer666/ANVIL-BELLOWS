@@ -7,10 +7,6 @@ import com.anvil.bellows.data.repository.ConversationRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
@@ -20,8 +16,7 @@ import javax.inject.Singleton
 @Singleton
 class WikiExporter @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val conversationRepository: ConversationRepository,
-    private val okHttpClient: OkHttpClient
+    private val conversationRepository: ConversationRepository
 ) {
     suspend fun exportAsMarkdown(sessionId: String): String = withContext(Dispatchers.IO) {
         val session = conversationRepository.getSession(sessionId)
@@ -81,25 +76,5 @@ class WikiExporter @Inject constructor(
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         context.startActivity(Intent.createChooser(intent, "Export Conversation").addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
-    }
-
-    suspend fun postToWikiEndpoint(
-        markdown: String,
-        endpoint: String,
-        bearerToken: String?
-    ): Result<Unit> = withContext(Dispatchers.IO) {
-        try {
-            val requestBuilder = Request.Builder()
-                .url(endpoint)
-                .post(markdown.toRequestBody("text/markdown; charset=utf-8".toMediaType()))
-            if (!bearerToken.isNullOrBlank()) {
-                requestBuilder.header("Authorization", "Bearer $bearerToken")
-            }
-            val response = okHttpClient.newCall(requestBuilder.build()).execute()
-            if (response.isSuccessful) Result.success(Unit)
-            else Result.failure(Exception("HTTP ${response.code}: ${response.message}"))
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
     }
 }

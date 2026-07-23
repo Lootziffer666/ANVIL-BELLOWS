@@ -1,0 +1,368 @@
+# ============================================================
+# AUTOGENERIERT von generate_config.py — NICHT von Hand editieren.
+# Quelle: providers.catalog.json (Katalog-Version 1.0.0)
+# Keys werden ausschließlich via os.environ/<ENV> aufgelöst.
+# ============================================================
+
+model_list:
+  - model_name: "pollinations/openai"
+    litellm_params:
+      model: "openai/openai"
+      api_base: "https://text.pollinations.ai/openai"
+      api_key: "anonymous-no-auth"
+    model_info:
+      free: true
+      provider: "pollinations"
+      limits_hint: "key-frei, Best-Effort"
+  - model_name: "pollinations/mistral"
+    litellm_params:
+      model: "openai/mistral"
+      api_base: "https://text.pollinations.ai/openai"
+      api_key: "anonymous-no-auth"
+    model_info:
+      free: true
+      provider: "pollinations"
+      limits_hint: "key-frei, Best-Effort"
+  - model_name: "ovhcloud/Meta-Llama-3_3-70B-Instruct"
+    litellm_params:
+      model: "openai/Meta-Llama-3_3-70B-Instruct"
+      api_base: "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1"
+      api_key: "anonymous-no-auth"
+    model_info:
+      free: true
+      provider: "ovhcloud"
+      limits_hint: "2 RPM/IP (anonym). HINWEIS: via LiteLLM (sendet Dummy-Bearer) lehnt OVH den Anonym-Zugang mit 403 ab -> für zuverlässige Nutzung OVH_API_KEY setzen."
+  - model_name: "ovhcloud/Qwen3-32B"
+    litellm_params:
+      model: "openai/Qwen3-32B"
+      api_base: "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1"
+      api_key: "anonymous-no-auth"
+    model_info:
+      free: true
+      provider: "ovhcloud"
+      limits_hint: "2 RPM/IP (anonym). HINWEIS: via LiteLLM (sendet Dummy-Bearer) lehnt OVH den Anonym-Zugang mit 403 ab -> für zuverlässige Nutzung OVH_API_KEY setzen."
+  - model_name: "ovhcloud/Qwen3-Coder-30B-A3B-Instruct"
+    litellm_params:
+      model: "openai/Qwen3-Coder-30B-A3B-Instruct"
+      api_base: "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1"
+      api_key: "anonymous-no-auth"
+    model_info:
+      free: true
+      provider: "ovhcloud"
+      limits_hint: "2 RPM/IP (anonym). HINWEIS: via LiteLLM (sendet Dummy-Bearer) lehnt OVH den Anonym-Zugang mit 403 ab -> für zuverlässige Nutzung OVH_API_KEY setzen."
+  - model_name: "ovhcloud/Mistral-Small-3.2-24B-Instruct"
+    litellm_params:
+      model: "openai/Mistral-Small-3.2-24B-Instruct"
+      api_base: "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1"
+      api_key: "anonymous-no-auth"
+    model_info:
+      free: true
+      provider: "ovhcloud"
+      limits_hint: "2 RPM/IP (anonym). HINWEIS: via LiteLLM (sendet Dummy-Bearer) lehnt OVH den Anonym-Zugang mit 403 ab -> für zuverlässige Nutzung OVH_API_KEY setzen."
+  - model_name: "ovhcloud/gpt-oss-120b"
+    litellm_params:
+      model: "openai/gpt-oss-120b"
+      api_base: "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1"
+      api_key: "anonymous-no-auth"
+    model_info:
+      free: true
+      provider: "ovhcloud"
+      limits_hint: "2 RPM/IP (anonym). HINWEIS: via LiteLLM (sendet Dummy-Bearer) lehnt OVH den Anonym-Zugang mit 403 ab -> für zuverlässige Nutzung OVH_API_KEY setzen."
+  - model_name: "ovhcloud/gpt-oss-20b"
+    litellm_params:
+      model: "openai/gpt-oss-20b"
+      api_base: "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1"
+      api_key: "anonymous-no-auth"
+    model_info:
+      free: true
+      provider: "ovhcloud"
+      limits_hint: "2 RPM/IP (anonym). HINWEIS: via LiteLLM (sendet Dummy-Bearer) lehnt OVH den Anonym-Zugang mit 403 ab -> für zuverlässige Nutzung OVH_API_KEY setzen."
+  - model_name: "ovhcloud/Qwen2.5-VL-72B-Instruct"
+    litellm_params:
+      model: "openai/Qwen2.5-VL-72B-Instruct"
+      api_base: "https://oai.endpoints.kepler.ai.cloud.ovh.net/v1"
+      api_key: "anonymous-no-auth"
+    model_info:
+      free: true
+      provider: "ovhcloud"
+      limits_hint: "2 RPM/IP (anonym). HINWEIS: via LiteLLM (sendet Dummy-Bearer) lehnt OVH den Anonym-Zugang mit 403 ab -> für zuverlässige Nutzung OVH_API_KEY setzen."
+  - model_name: "sambanova/Meta-Llama-3.3-70B-Instruct"
+    litellm_params:
+      model: "sambanova/Meta-Llama-3.3-70B-Instruct"
+      api_key: "os.environ/SAMBANOVA_API_KEY"
+    model_info:
+      free: true
+      provider: "sambanova"
+      limits_hint: "20 RPM, 200K TPD"
+  - model_name: "sambanova/DeepSeek-V3.1"
+    litellm_params:
+      model: "sambanova/DeepSeek-V3.1"
+      api_key: "os.environ/SAMBANOVA_API_KEY"
+    model_info:
+      free: true
+      provider: "sambanova"
+      limits_hint: "20 RPM, 200K TPD"
+  - model_name: "sambanova/gpt-oss-120b"
+    litellm_params:
+      model: "sambanova/gpt-oss-120b"
+      api_key: "os.environ/SAMBANOVA_API_KEY"
+    model_info:
+      free: true
+      provider: "sambanova"
+      limits_hint: "20 RPM, 200K TPD"
+  - model_name: "cloudflare/@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+    litellm_params:
+      model: "cloudflare/@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+      api_key: "os.environ/CLOUDFLARE_API_KEY"
+    model_info:
+      free: true
+      provider: "cloudflare"
+      limits_hint: "10.000 Neurons/Tag"
+  - model_name: "cloudflare/@cf/openai/gpt-oss-120b"
+    litellm_params:
+      model: "cloudflare/@cf/openai/gpt-oss-120b"
+      api_key: "os.environ/CLOUDFLARE_API_KEY"
+    model_info:
+      free: true
+      provider: "cloudflare"
+      limits_hint: "10.000 Neurons/Tag"
+  - model_name: "cloudflare/@cf/mistralai/mistral-small-3.1-24b-instruct"
+    litellm_params:
+      model: "cloudflare/@cf/mistralai/mistral-small-3.1-24b-instruct"
+      api_key: "os.environ/CLOUDFLARE_API_KEY"
+    model_info:
+      free: true
+      provider: "cloudflare"
+      limits_hint: "10.000 Neurons/Tag"
+  - model_name: "scaleway/llama-3.3-70b-instruct"
+    litellm_params:
+      model: "openai/llama-3.3-70b-instruct"
+      api_base: "https://api.scaleway.ai/v1"
+      api_key: "os.environ/SCALEWAY_API_KEY"
+    model_info:
+      free: true
+      provider: "scaleway"
+      limits_hint: "Free Tier, EU-Hosting"
+  - model_name: "scaleway/qwen2.5-coder-32b-instruct"
+    litellm_params:
+      model: "openai/qwen2.5-coder-32b-instruct"
+      api_base: "https://api.scaleway.ai/v1"
+      api_key: "os.environ/SCALEWAY_API_KEY"
+    model_info:
+      free: true
+      provider: "scaleway"
+      limits_hint: "Free Tier, EU-Hosting"
+  - model_name: "scaleway/mistral-small-3.2-24b-instruct-2506"
+    litellm_params:
+      model: "openai/mistral-small-3.2-24b-instruct-2506"
+      api_base: "https://api.scaleway.ai/v1"
+      api_key: "os.environ/SCALEWAY_API_KEY"
+    model_info:
+      free: true
+      provider: "scaleway"
+      limits_hint: "Free Tier, EU-Hosting"
+  - model_name: "dashscope/qwen-max"
+    litellm_params:
+      model: "openai/qwen-max"
+      api_base: "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+      api_key: "os.environ/DASHSCOPE_API_KEY"
+    model_info:
+      free: true
+      provider: "dashscope"
+      limits_hint: "Free Quota (Model Studio)"
+  - model_name: "dashscope/qwen-plus"
+    litellm_params:
+      model: "openai/qwen-plus"
+      api_base: "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+      api_key: "os.environ/DASHSCOPE_API_KEY"
+    model_info:
+      free: true
+      provider: "dashscope"
+      limits_hint: "Free Quota (Model Studio)"
+  - model_name: "dashscope/qwen2.5-coder-32b-instruct"
+    litellm_params:
+      model: "openai/qwen2.5-coder-32b-instruct"
+      api_base: "https://dashscope-intl.aliyuncs.com/compatible-mode/v1"
+      api_key: "os.environ/DASHSCOPE_API_KEY"
+    model_info:
+      free: true
+      provider: "dashscope"
+      limits_hint: "Free Quota (Model Studio)"
+  - model_name: "novita/meta-llama/llama-3.3-70b-instruct"
+    litellm_params:
+      model: "openai/meta-llama/llama-3.3-70b-instruct"
+      api_base: "https://api.novita.ai/openai/v1"
+      api_key: "os.environ/NOVITA_API_KEY"
+    model_info:
+      free: true
+      provider: "novita"
+      limits_hint: "Free Credits"
+  - model_name: "novita/deepseek/deepseek-v3"
+    litellm_params:
+      model: "openai/deepseek/deepseek-v3"
+      api_base: "https://api.novita.ai/openai/v1"
+      api_key: "os.environ/NOVITA_API_KEY"
+    model_info:
+      free: true
+      provider: "novita"
+      limits_hint: "Free Credits"
+  - model_name: "routeway/llama-3.3-70b-instruct"
+    litellm_params:
+      model: "openai/llama-3.3-70b-instruct"
+      api_base: "https://api.routeway.ai/v1"
+      api_key: "os.environ/ROUTEWAY_API_KEY"
+    model_info:
+      free: true
+      provider: "routeway"
+      limits_hint: "Free Models"
+  - model_name: "routeway/deepseek-r1"
+    litellm_params:
+      model: "openai/deepseek-r1"
+      api_base: "https://api.routeway.ai/v1"
+      api_key: "os.environ/ROUTEWAY_API_KEY"
+    model_info:
+      free: true
+      provider: "routeway"
+      limits_hint: "Free Models"
+  - model_name: "opencode-zen/qwen3-coder"
+    litellm_params:
+      model: "openai/qwen3-coder"
+      api_base: "https://opencode.ai/zen/v1"
+      api_key: "os.environ/OPENCODE_API_KEY"
+    model_info:
+      free: true
+      provider: "opencode-zen"
+      limits_hint: "Free Coding-Modelle"
+  - model_name: "opencode-zen/kimi-k2"
+    litellm_params:
+      model: "openai/kimi-k2"
+      api_base: "https://opencode.ai/zen/v1"
+      api_key: "os.environ/OPENCODE_API_KEY"
+    model_info:
+      free: true
+      provider: "opencode-zen"
+      limits_hint: "Free Coding-Modelle"
+  - model_name: "aionlabs/aion-2.5"
+    litellm_params:
+      model: "openai/aion-2.5"
+      api_base: "https://api.aionlabs.ai/v1"
+      api_key: "os.environ/AIONLABS_API_KEY"
+    model_info:
+      free: true
+      provider: "aionlabs"
+      limits_hint: "15 RPM, 20K TPD (Roleplay/Story)"
+  - model_name: "aionlabs/aion-rp-1.0-8b"
+    litellm_params:
+      model: "openai/aion-rp-1.0-8b"
+      api_base: "https://api.aionlabs.ai/v1"
+      api_key: "os.environ/AIONLABS_API_KEY"
+    model_info:
+      free: true
+      provider: "aionlabs"
+      limits_hint: "15 RPM, 20K TPD (Roleplay/Story)"
+  - model_name: "modelscope/Qwen/Qwen3-32B"
+    litellm_params:
+      model: "openai/Qwen/Qwen3-32B"
+      api_base: "https://api-inference.modelscope.cn/v1"
+      api_key: "os.environ/MODELSCOPE_API_KEY"
+    model_info:
+      free: true
+      provider: "modelscope"
+      limits_hint: "2.000 RPD gesamt (Alibaba-Bindung)"
+  - model_name: "modelscope/deepseek-ai/DeepSeek-V3"
+    litellm_params:
+      model: "openai/deepseek-ai/DeepSeek-V3"
+      api_base: "https://api-inference.modelscope.cn/v1"
+      api_key: "os.environ/MODELSCOPE_API_KEY"
+    model_info:
+      free: true
+      provider: "modelscope"
+      limits_hint: "2.000 RPD gesamt (Alibaba-Bindung)"
+  - model_name: "groq/llama-3.3-70b-versatile"
+    litellm_params:
+      model: "groq/llama-3.3-70b-versatile"
+      api_key: "os.environ/GROQ_API_KEY"
+    model_info:
+      free: true
+      provider: "groq"
+      limits_hint: "14.400 req/Tag (free)"
+  - model_name: "groq/llama-3.1-8b-instant"
+    litellm_params:
+      model: "groq/llama-3.1-8b-instant"
+      api_key: "os.environ/GROQ_API_KEY"
+    model_info:
+      free: true
+      provider: "groq"
+      limits_hint: "14.400 req/Tag (free)"
+  - model_name: "groq/deepseek-r1-distill-llama-70b"
+    litellm_params:
+      model: "groq/deepseek-r1-distill-llama-70b"
+      api_key: "os.environ/GROQ_API_KEY"
+    model_info:
+      free: true
+      provider: "groq"
+      limits_hint: "14.400 req/Tag (free)"
+  - model_name: "openrouter/meta-llama/llama-3.3-70b-instruct:free"
+    litellm_params:
+      model: "openrouter/meta-llama/llama-3.3-70b-instruct:free"
+      api_key: "os.environ/OPENROUTER_API_KEY"
+    model_info:
+      free: true
+      provider: "openrouter"
+      limits_hint: "abhängig vom :free-Modell"
+  - model_name: "openrouter/deepseek/deepseek-r1:free"
+    litellm_params:
+      model: "openrouter/deepseek/deepseek-r1:free"
+      api_key: "os.environ/OPENROUTER_API_KEY"
+    model_info:
+      free: true
+      provider: "openrouter"
+      limits_hint: "abhängig vom :free-Modell"
+  - model_name: "openrouter/qwen/qwq-32b:free"
+    litellm_params:
+      model: "openrouter/qwen/qwq-32b:free"
+      api_key: "os.environ/OPENROUTER_API_KEY"
+    model_info:
+      free: true
+      provider: "openrouter"
+      limits_hint: "abhängig vom :free-Modell"
+  - model_name: "gemini/gemini-2.0-flash"
+    litellm_params:
+      model: "gemini/gemini-2.0-flash"
+      api_key: "os.environ/GEMINI_API_KEY"
+    model_info:
+      free: true
+      provider: "gemini"
+      limits_hint: "Gemini 2.x Flash free quota"
+  - model_name: "gemini/gemini-2.5-flash"
+    litellm_params:
+      model: "gemini/gemini-2.5-flash"
+      api_key: "os.environ/GEMINI_API_KEY"
+    model_info:
+      free: true
+      provider: "gemini"
+      limits_hint: "Gemini 2.x Flash free quota"
+  - model_name: "cerebras/llama-3.3-70b"
+    litellm_params:
+      model: "cerebras/llama-3.3-70b"
+      api_key: "os.environ/CEREBRAS_API_KEY"
+    model_info:
+      free: true
+      provider: "cerebras"
+      limits_hint: "ultraschnell (~2000 t/s)"
+  - model_name: "cerebras/qwen-3-32b"
+    litellm_params:
+      model: "cerebras/qwen-3-32b"
+      api_key: "os.environ/CEREBRAS_API_KEY"
+    model_info:
+      free: true
+      provider: "cerebras"
+      limits_hint: "ultraschnell (~2000 t/s)"
+
+general_settings:
+  master_key: "os.environ/LITELLM_MASTER_KEY"
+
+litellm_settings:
+  drop_params: true
+  # request_timeout konservativ; Limits lernt ANVIL-BELLOWS zur Laufzeit.
+  request_timeout: 120

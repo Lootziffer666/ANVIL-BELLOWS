@@ -1,4 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <style name="Theme.AnvilBellows" parent="android:Theme.Material.Light.NoActionBar" />
+    <!--
+        Bridge theme for Compose + enableEdgeToEdge().
+
+        Parent: android:Theme.Material.Light.NoActionBar
+        — Always available (Android platform, API 21+), no library required.
+        — Theme.Material3.DayNight.NoActionBar was removed: it requires the
+          com.google.android.material MDC XML library which is not a dependency
+          of this pure-Compose app and caused AAPT resource resolution failure.
+
+        android:windowBackground = IIG canvas colour (values/colors.xml for light,
+        values-night/colors.xml for dark) eliminates the cold-launch white flash
+        before AnvilBellowsTheme draws its first frame.
+
+        Status + nav bar colours are set to transparent here and managed by
+        enableEdgeToEdge() in MainActivity.
+    -->
+    <style name="Theme.AnvilBellows" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/iig_canvas</item>
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+    </style>
 </resources>

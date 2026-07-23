@@ -13,6 +13,7 @@ import androidx.navigation.compose.*
 import com.anvil.bellows.presentation.ui.agents.AgentPresetEditorScreen
 import com.anvil.bellows.presentation.ui.chat.ChatOverviewScreen
 import com.anvil.bellows.presentation.ui.chat.ChatScreen
+import com.anvil.bellows.presentation.ui.memory.MemoryScreen
 import com.anvil.bellows.presentation.ui.providers.ApiKeyWizardScreen
 import com.anvil.bellows.presentation.ui.providers.ProvidersScreen
 import com.anvil.bellows.presentation.ui.projects.ProjectsScreen
@@ -38,6 +39,8 @@ private object Routes {
     const val AGENT_NEW     = "agents/edit/new"
     /** Full-screen step-through wizard for setting API keys. */
     const val API_KEY_WIZARD = "providers/wizard"
+    /** Memory browser — navigated to from the Projects top-bar. */
+    const val MEMORY          = "memory"
 }
 
 @Composable
@@ -130,7 +133,34 @@ fun AppNavHost() {
                 )
             }
 
-            composable(Screen.Projects.route) { ProjectsScreen(innerPadding) }
+            // Projects – Memory button in top-bar triggers MEMORY route;
+            // Resume button on a session loads it into the shared ChatViewModel
+            // and navigates to the Chat tab.
+            composable(Screen.Projects.route) {
+                ProjectsScreen(
+                    paddingValues      = innerPadding,
+                    onNavigateToMemory = { navController.navigate(Routes.MEMORY) },
+                    onNavigateToChat   = { sessionId ->
+                        chatViewModel.loadSession(sessionId)
+                        navController.navigate(Screen.Chat.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState    = true
+                        }
+                    }
+                )
+            }
+
+            // Memory browser – full-screen, not in bottom nav
+            composable(Routes.MEMORY) {
+                MemoryScreen(
+                    paddingValues = innerPadding,
+                    onBack        = { navController.popBackStack() }
+                )
+            }
+
             composable(Screen.Quota.route)    { QuotaDashboardScreen(innerPadding) }
             composable(Screen.Settings.route) { SettingsScreen(innerPadding) }
         }

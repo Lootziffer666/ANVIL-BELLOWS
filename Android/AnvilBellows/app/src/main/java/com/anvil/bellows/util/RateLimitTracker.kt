@@ -15,7 +15,10 @@ class RateLimitTracker @Inject constructor(
     private val providerConfigDao: ProviderConfigDao,
     private val modelConfigDao: ModelConfigDao
 ) {
-    private val zaiSemaphore = Semaphore(1)
+    // z.ai erlaubt nur EINE gleichzeitige Anfrage pro Key → serialisieren,
+    // damit parallele Coroutines nicht in Concurrency-/429-Fehler laufen.
+    private val zaiSemaphore = Semaphore(permits = 1)
+    fun getZaiSemaphore(): Semaphore = zaiSemaphore
 
     suspend fun canUse(provider: ProviderConfigEntity): Boolean {
         if (!provider.enabled) return false
@@ -60,6 +63,4 @@ class RateLimitTracker @Inject constructor(
         val rpd = requestLogDao.countSince(providerId, now - 86_400_000L)
         return rpm to rpd
     }
-
-    fun getZaiSemaphore(): Semaphore = zaiSemaphore
 }
