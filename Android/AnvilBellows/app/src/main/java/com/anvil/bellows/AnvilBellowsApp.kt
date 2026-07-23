@@ -16,8 +16,15 @@ class AnvilBellowsApp : Application() {
 
     @Inject lateinit var databaseInitializer: DatabaseInitializer
 
+    /** Hält einen verschlüsselten Snapshot der Provider-Konfiguration aktuell
+     *  (Recovery nach destruktiver Room-Migration — keine verlorenen Keys mehr). */
+    @Inject lateinit var providerBackupManager: ProviderBackupManager
+
     /** Manages the BELLOWS NanoHTTPD local API server on port 4141. */
     @Inject lateinit var serverManager: ServerManager
+
+    /** App-weiter Scope, der die gesamte Prozess-Lebensdauer überdauert. */
+    private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onCreate() {
         super.onCreate()

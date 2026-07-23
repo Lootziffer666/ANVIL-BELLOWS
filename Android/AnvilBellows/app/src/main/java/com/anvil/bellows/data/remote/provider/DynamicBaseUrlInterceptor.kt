@@ -3,6 +3,7 @@ package com.anvil.bellows.data.remote.provider
 import okhttp3.Interceptor
 import okhttp3.Response
 import okhttp3.HttpUrl.Companion.toHttpUrl
+import javax.inject.Inject
 
 /**
  * Replaces the Retrofit base URL at call-time based on the
@@ -48,11 +49,7 @@ import okhttp3.HttpUrl.Companion.toHttpUrl
  *
  * @see com.anvil.bellows.data.remote.api.LlmApiService
  */
-class DynamicBaseUrlInterceptor : Interceptor {
-
-    companion object {
-        const val X_TARGET_BASE_URL = "X-Target-Base-Url"
-    }
+class DynamicBaseUrlInterceptor @Inject constructor() : Interceptor {
 
     companion object {
         const val X_TARGET_BASE_URL = "X-Target-Base-Url"
